@@ -181,10 +181,10 @@ Once remediation steps are completed, generate a single master document:
 This consolidated report aggregates:
 1. **Executive Security Dashboard**: Pre-scan vs Post-remediation vulnerability posture (enforcing **Zero Critical/High Vulnerabilities** before deployment).
 2. **Audit Trail**: Chronological record of scans, verifications, patches applied, and Unit/PBT regression pass rates.
-3. **Links to Detailed Phase Reports**:
-   - [01: Vulnerability Scan Report](./codemender-01-vulnerability-scan-report.md)
-   - [02: Verification & Triage Report](./codemender-02-verification-report.md)
-   - [03: Remediation & Patch Report](./codemender-03-remediation-report.md)
+3. **Links to Detailed Phase Reports (in `docs/`)**:
+   - `docs/codemender-01-vulnerability-scan-report.md` (`01: Vulnerability Scan Report`)
+   - `docs/codemender-02-verification-report.md` (`02: Verification & Triage Report`)
+   - `docs/codemender-03-remediation-report.md` (`03: Remediation & Patch Report`)
 4. **Residual Risk & Architecture Hardening Recommendations**: Additional defense-in-depth guidance (Model Armor policies, Cloud Armor WAF rules, IAP, IAM least-privilege, CI/CD automated scanning).
 
 ---
@@ -204,6 +204,9 @@ python3 _agents/skills/codemender/scripts/run_codemender_stage.py verify <findin
 
 # Fix finding
 python3 _agents/skills/codemender/scripts/run_codemender_stage.py fix <finding_id> --project <PROJECT_ID> --docs-dir docs
+
+# Generate consolidated summary report
+python3 _agents/skills/codemender/scripts/run_codemender_stage.py summary --project <PROJECT_ID> --docs-dir docs
 ```
 
 ---

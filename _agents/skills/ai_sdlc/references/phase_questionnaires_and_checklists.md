@@ -76,7 +76,7 @@ Whenever a Unit Test, Property-Based Test (PBT), or `agents-cli eval` fails:
 
 ### 2.2 Phase 2 Gate Checklist (`Gate 2: Execution -> Operation`)
 - [ ] Brownfield Baseline SDD (`specs/baseline/`) created or updated (if brownfield).
-- [ ] Feature SDD (`specs/features/SPEC-<YYYYMMDD>-<TITLE>.md`) authored with all 8 sections from [`specs/templates/sdd-template.md`](../../../../specs/templates/sdd-template.md).
+- [ ] Feature SDD (`specs/features/SPEC-<YYYYMMDD>-<TITLE>.md`) authored with all 8 sections from [`specs/templates/sdd-template.md`](../examples/specs/templates/sdd-template.md).
 - [ ] Stakeholder approval obtained via `ask_question` on the SDD & Implementation Plan prior to coding.
 - [ ] Every implementation step completed with passing **Deterministic Unit Tests** and **Generative Property-Based Tests (PBT)**.
 - [ ] Zero hardcoded regex routing, keyword heuristics, or static fallback arrays in ADK agents.

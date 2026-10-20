@@ -9,7 +9,8 @@ specs/
 ├── README.md                      # Index of all specifications and progress reports
 ├── templates/
 │   ├── README.md                  # Specification authoring instructions and guidelines
-│   └── sdd-template.md            # Standardized template with Implementation Plan & Testing sections
+│   ├── baseline-template.md       # Brownfield Baseline & Modernization Assessment template
+│   └── sdd-template.md            # Standardized Feature SDD template with Implementation Plan & Testing sections
 ├── baseline/                      # Baseline SDDs for existing/brownfield code
 │   └── README.md                  # Brownfield discovery protocol and baseline index
 ├── features/                      # Feature specifications and enhancement proposals

@@ -12,19 +12,21 @@ Every single variable that influences the Bill of Materials (BoM) calculation mu
 
 The agent must cross-reference every discovered architecture component against this questionnaire and ask the user for all missing values:
 
-### 1.1 General & Infrastructure Fundamentals
-- [ ] **Deployment Region**: In which Google Cloud region(s) will this workload run? (e.g., `us-central1`, `europe-west1`, `asia-southeast1`).
-- [ ] **Operational Schedule**: Will resources run 24/7 continuously (730 hours/month), during business hours only (e.g., ~220 hours/month), or on a batch/scheduled basis?
+### 1.1 General, Multi-Environment (`NONPROD` vs `PROD`) & Brownfield Fundamentals
+- [ ] **Deployment Region**: In which Google Cloud region(s) (`GCP_REGION` / `GENAI_LOCATION`) will this workload run? (e.g., `us-central1`, `europe-west1`, `asia-southeast1`).
+- [ ] **Multi-Environment Scope (`NONPROD_*` vs `PROD_*`)**: Should we model both Non-Prod (`main`/`develop` branch) and Production (`prod` branch) environments per the unified `.env` configuration?
+- [ ] **Operational Schedule**: Will resources run 24/7 continuously in Prod (730 hours/month with `PROD_MIN_INSTANCES>=1`) while scaling to zero (`NONPROD_MIN_INSTANCES=0`) or running business hours (~220 hours/month) in Non-Prod?
 - [ ] **High Availability / Disaster Recovery**: What are the multi-zone or multi-region redundancy requirements?
+- [ ] **Brownfield TCO Comparison (if applicable)**: Are we comparing against an existing "As-Is" legacy system (e.g., Windows Server / `.NET Framework` VMs, SQL Server licenses) to calculate modernization ROI?
 
 ---
 
-### 1.2 Compute & Containers (Cloud Run, GKE, Compute Engine)
-- [ ] **Request Volume**: What is the anticipated monthly request count or average/peak queries per second (RPS)?
-- [ ] **Execution Profile**: What is the expected average execution time / response latency per request (in milliseconds or seconds)?
-- [ ] **Concurrency**: For Cloud Run, how many concurrent requests should a single container instance handle?
-- [ ] **Instance Scaling**: What are the required minimum instances (`min_instances`) and maximum instances (`max_instances`)?
-- [ ] **Hardware Sizing**: What are the allocated vCPU and RAM requirements per container or VM?
+### 1.2 Compute & Containers (Cloud Run `cloud_run`, GKE, Compute Engine)
+- [ ] **Request Volume**: What is the anticipated monthly request count or average/peak queries per second (RPS) in Prod and Non-Prod?
+- [ ] **Execution & Streaming Profile**: What is the expected average execution time / response latency per request (including SSE/WebSocket streaming proxy hold durations to `agent_runtime`)?
+- [ ] **Concurrency**: For Cloud Run, how many concurrent requests/streams should a single container instance handle?
+- [ ] **Instance Scaling**: What are the required minimum instances (`NONPROD_MIN_INSTANCES`, `PROD_MIN_INSTANCES`) and maximum instances (`NONPROD_MAX_INSTANCES`, `PROD_MAX_INSTANCES`)?
+- [ ] **Hardware Sizing**: What are the allocated vCPU and RAM requirements per container or VM for Frontend UI and Streaming Proxy services?
 - [ ] **For GKE / Compute Engine**: What machine family is required (e.g., `e2-standard-4`, `n2-standard-8`, `c3-standard-4`)? Are Spot/Preemptible VMs acceptable for non-critical workloads?
 - [ ] **Boot & Persistent Disks**: What disk capacity (GB) and type (`pd-standard`, `pd-balanced`, `pd-ssd`) are attached per instance?
 
@@ -32,7 +34,7 @@ The agent must cross-reference every discovered architecture component against t
 
 ### 1.3 Databases & Caching (Cloud SQL, Cloud Spanner, Firestore, Memorystore)
 - [ ] **Database Engine & Version**: PostgreSQL, MySQL, SQL Server, or Cloud Spanner?
-- [ ] **Instance Sizing**: How many dedicated vCPUs and GB of RAM are required for the primary database?
+- [ ] **Instance Sizing**: How many dedicated vCPUs and GB of RAM are required for Non-Prod vs Prod database instances?
 - [ ] **High Availability (HA)**: Is Regional High Availability (standby failover instance in a second zone) required for production?
 - [ ] **Read Replicas**: How many read replicas are needed to handle query load?
 - [ ] **Storage Sizing**: What is the initial provisioned database storage size (GB), and what is the expected monthly growth rate?
@@ -64,23 +66,27 @@ The agent must cross-reference every discovered architecture component against t
 
 ---
 
-### 1.6 Generative AI & Vertex AI
-- [ ] **Target Foundation Model**: Which exact model(s) will be deployed? (e.g., Gemini 3.7 Flash, Gemini 3.1 Pro, Gemini 2.0 Flash, Gemini 1.5 Pro).
-- [ ] **Inference Turn Volume**: How many prompts, queries, or multi-turn interactions are expected per day or month?
-- [ ] **Input Prompt Length**: What is the average input context length per turn (in tokens or characters), including system prompts, chat history, and retrieved RAG context?
-- [ ] **Output Generation Length**: What is the average generated output length per turn (in tokens or characters)?
-- [ ] **Multimodal Modalities**: Are image, audio, or video inputs processed? If so, what is the monthly volume/duration?
-- [ ] **Context Caching**: Will prompt caching be enabled for repeated reference documents?
+### 1.6 Generative AI, Google ADK (`agent_runtime`), Model Armor & Live Evaluation
+- [ ] **Target Foundation Model**: Which exact model(s) will be deployed for the ADK `OrchestratorAgent` and domain subagents? (e.g., Gemini 2.5 Pro, Gemini 2.5 Flash, Gemini 3.7 Flash, Gemini 3.1 Pro).
+- [ ] **Inference Turn Volume**: How many user conversation turns are expected per day or month?
+- [ ] **Agentic Multi-Hop Multiplier**: On average, how many LLM reasoning calls + `FunctionTool` invocations occur per user turn (e.g., 1 Orchestrator intent classification + 1–2 Subagent/Tool hops)?
+- [ ] **Input Prompt Length**: What is the average input context length per hop (in tokens), including system prompts, `FunctionTool` declarations, chat history, and retrieved tool outputs?
+- [ ] **Output Generation Length**: What is the average generated output length per hop (in tokens)?
+- [ ] **Model Armor Guardrails**: Are input prompts (`before_agent_callback`) and/or model responses screened by Google Cloud Model Armor?
+- [ ] **Continuous Live Evaluation (`agents-cli eval`)**: How many golden test cases are in `evals/datasets/*.jsonl`, and how many `agents-cli eval run` executions occur per month across Non-Prod and Prod gates?
+- [ ] **Multimodal Modalities & Context Caching**: Are image, audio, or video inputs processed? Will Gemini context caching be enabled?
 - [ ] **Vector Search (Matching Engine)**: What index dimension (e.g., 768 or 1536) and how many deployed endpoint replicas are needed?
 
 ---
 
-### 1.7 Networking, Ingress & Security
-- [ ] **Internet Egress**: How many GB or TB of outbound data transfer to the public internet are expected per month?
-- [ ] **Egress Network Service Tier**: Google Cloud Premium Tier (global fiber backbone) or Standard Tier?
-- [ ] **Application Load Balancing (ALB)**: How many forwarding rules and SSL certificates will be configured? How much data is processed by the ALB?
-- [ ] **Cloud NAT**: How many Cloud NAT gateways are required for private subnet egress?
-- [ ] **Cloud Armor**: How many security policies and custom WAF rules will be evaluated? What is the expected monthly query volume?
+### 1.7 Networking, IAM Ingress Pattern (Rule 10) & DevSecOps Toolchain
+- [ ] **Compliant IAM & Ingress Pattern (Rule 10 — Zero `allUsers`)**:
+  - **Pattern 1**: Identity-Aware Proxy (IAP) behind External HTTPS Application Load Balancer + Serverless NEG (How many forwarding rules and GB processed?)
+  - **Pattern 2**: App-Level Google OAuth 2.0 with `invoker-iam-disabled="true"` (Zero ALB forwarding rule base fee)
+  - **Pattern 3**: Direct Unauthenticated Ingress with `invoker-iam-disabled="true"` on frontend + private backend (Zero ALB forwarding rule base fee)
+- [ ] **Internet Egress**: How many GB or TB of outbound data transfer to the public internet are expected per month, and on which Network Service Tier (Premium vs Standard)?
+- [ ] **Cloud NAT & Cloud Armor**: How many Cloud NAT gateways, Cloud Armor security policies, and WAF rules will be evaluated?
+- [ ] **DevSecOps CI/CD & Observability**: How many monthly Google Cloud Build minutes, container images stored/scanned in Artifact Registry (Artifact Analysis), active secret versions in Secret Manager, and GB of Cloud Logging/Monitoring telemetry?
 
 ---
 

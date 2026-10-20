@@ -47,7 +47,7 @@ Because several functional and architectural factors are unspecified, the agent 
 The agent reverse-engineers the existing order database schema and auth middleware, creating `specs/baseline/order-portal-baseline.md`.
 
 ### Step 2.1 & 2.2: Feature SDD & Step-by-Step Test Plan Authoring
-Using [`specs/templates/sdd-template.md`](../../../../specs/templates/sdd-template.md), the agent creates `specs/features/SPEC-20260930-ORDER-DISPUTE-AGENT.md` containing:
+Using [`specs/templates/sdd-template.md`](./specs/templates/sdd-template.md), the agent creates `specs/features/SPEC-20260930-ORDER-DISPUTE-AGENT.md` containing:
 - Sections 1–6: Problem Statement, Dual-Runtime Sequence Diagram, Pydantic/TypeScript Schemas, API Contracts, UI State Machine, and 13-Rule Governance Checklist.
 - Section 7: 6-step implementation plan where **every step** specifies deterministic **Unit Tests** (`pytest` / `vitest`), generative **Property-Based Tests** (`hypothesis` / `fast-check`), and **Live Agent Evaluations** (`agents-cli eval`).
 

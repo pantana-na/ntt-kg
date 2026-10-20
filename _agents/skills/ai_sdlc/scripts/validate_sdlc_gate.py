@@ -257,8 +257,8 @@ def main() -> None:
     parser.add_argument(
         "--phase",
         choices=["inception", "execution", "operation", "all"],
-        default="all",
-        help="Target AI-SDLC phase to validate",
+        default=None,
+        help="Target AI-SDLC phase to validate (defaults to 'all' when --init is not passed)",
     )
     parser.add_argument(
         "--repo-root",
@@ -275,33 +275,43 @@ def main() -> None:
     skill_dir = Path(__file__).resolve().parents[1]
     repo_root = Path(args.repo_root).resolve() if args.repo_root else Path(__file__).resolve().parents[4]
 
+    init_res = None
     if args.init:
         init_res = scaffold_workspace(repo_root, skill_dir)
-        if args.json:
-            print(json.dumps(init_res, indent=2))
-        else:
+        if args.phase is None:
+            if args.json:
+                print(json.dumps(init_res, indent=2))
+            else:
+                print(f"=== {init_res['action']} ===")
+                print(f"Repository Root:  {init_res['repo_root']}")
+                print(f"Source Templates: {init_res['source_templates']}")
+                print(f"Created Files ({len(init_res['created_files'])}):")
+                for f in init_res["created_files"]:
+                    print(f"  + {f}")
+                if init_res["skipped_existing_files"]:
+                    print(f"Skipped Existing Files ({len(init_res['skipped_existing_files'])}):")
+                    for f in init_res["skipped_existing_files"]:
+                        print(f"  = {f}")
+            return
+        elif not args.json:
             print(f"=== {init_res['action']} ===")
             print(f"Repository Root:  {init_res['repo_root']}")
-            print(f"Source Templates: {init_res['source_templates']}")
-            print(f"Created Files ({len(init_res['created_files'])}):")
-            for f in init_res["created_files"]:
-                print(f"  + {f}")
-            if init_res["skipped_existing_files"]:
-                print(f"Skipped Existing Files ({len(init_res['skipped_existing_files'])}):")
-                for f in init_res["skipped_existing_files"]:
-                    print(f"  = {f}")
-        return
+            print(f"Created {len(init_res['created_files'])} files, skipped {len(init_res['skipped_existing_files'])} existing files.\n")
 
+    target_phase = args.phase or "all"
     results: List[Dict[str, Any]] = []
-    if args.phase in ("inception", "all"):
+    if target_phase in ("inception", "all"):
         results.append(validate_inception(repo_root))
-    if args.phase in ("execution", "all"):
+    if target_phase in ("execution", "all"):
         results.append(validate_execution(repo_root))
-    if args.phase in ("operation", "all"):
+    if target_phase in ("operation", "all"):
         results.append(validate_operation(repo_root))
 
     if args.json:
-        print(json.dumps({"repo_root": str(repo_root), "validations": results}, indent=2))
+        payload: Dict[str, Any] = {"repo_root": str(repo_root), "validations": results}
+        if init_res is not None:
+            payload["initialization"] = init_res
+        print(json.dumps(payload, indent=2))
         return
 
     print(f"=== AI-SDLC Gate Validation Report ({repo_root}) ===")

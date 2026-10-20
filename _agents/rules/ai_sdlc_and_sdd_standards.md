@@ -100,7 +100,7 @@ When working on an existing (brownfield) codebase or modernizing any legacy subs
 
 ---
 
-## 3. Mandatory 4-Step Root Cause Investigation (RCA) & Zero Quick-Patch Standard
+## 3. Mandatory 4-Step Root Cause Investigation (RCA) & Zero Quick-Patch Standard (Rule 13)
 
 When **any** test fails (**Agent Evaluation (`agents-cli eval`)**, **Property-Based Tests (PBT)**, **Unit Tests**, or **Integration/Smoke Tests**), or when a user reports a defect or requests a bug fix:
 

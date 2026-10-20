@@ -122,7 +122,9 @@ sequenceDiagram
 | Governance Rule | Current Brownfield State ("As-Is") | Compliance Status | Remediation Required in Target Feature SDD |
 | :--- | :--- | :--- | :--- |
 | **Dual-Runtime Split (`AGENTS.md`)** | *(e.g., Monolithic 3-tier app or LLM calls embedded in Express/FastAPI)* | `Non-Compliant` \| `Compliant` | Decouple AI agents to `agent_runtime` (`google-adk`) and UI/Proxy to `cloud_run`. |
-| **Cognitive Agent Reasoning (Rule 13)** | *(e.g., Regex/keyword intent routing or hardcoded `if/else` chains)* | `Non-Compliant` \| `N/A` | Replace with ADK `OrchestratorAgent` + Canonical MECE Intent Topology (`OTHERS` included). |
+| **Google ADK & Cognitive Reasoning (Rule 11)** | *(e.g., Regex/keyword intent routing or hardcoded `if/else` chains)* | `Non-Compliant` \| `N/A` | Replace with ADK `OrchestratorAgent` + Canonical MECE Intent Topology (`OTHERS` included). |
+| **Live Agent Evaluation (Rule 12)** | *(e.g., No `evals/datasets/*.jsonl` or offline mocked tests only)* | `Non-Compliant` \| `N/A` | Establish `agents-cli eval run` suite ($\ge 95\%$ precision, $1.000$ groundedness). |
+| **4-Step RCA & Zero Quick-Patch (Rule 13)** | *(e.g., Hardcoded fallback dicts or silent error swallowing)* | `Non-Compliant` \| `Compliant` | Remove mockup fallbacks; enforce structured errors and 4-Step RCA protocol. |
 | **Pre-Build CodeMender SAST (Rule 3)** | *(Baseline scan: `docs/codemender-01-vulnerability-scan-report.md`)* | `Pending` \| `Audited` | Remediate all Critical/High vulnerabilities before deployment. |
 | **Cloud Run `/healthz` & Observability (Rule 6)** | *(e.g., No `/healthz` endpoint; unstructured console/file logs)* | `Non-Compliant` \| `Compliant` | Add `GET /healthz` probe and structured JSON logging to Cloud Logging. |
 | **Unified Single-File `.env` (Rule 8)** | *(e.g., `Web.config`, multiple `.env.*` files, or hardcoded constants)* | `Non-Compliant` \| `Compliant` | Consolidate into single `.env` (`NONPROD_*` and `PROD_*` blocks). |

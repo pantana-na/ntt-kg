@@ -6,7 +6,7 @@ An enterprise platform and engineering framework operating under the **3-Phase A
 
 ## 🏛️ Core Architecture & Governance Pillars
 
-This repository is governed by five core pillars codified under [`_agents/rules/`](./_agents/rules/), orchestrated by the **[`ai-sdlc` skill](./_agents/skills/ai_sdlc/SKILL.md)** and [`AGENTS.md`](./AGENTS.md):
+This repository is governed by **three consolidated rule files** covering five core engineering pillars under [`_agents/rules/`](./_agents/rules/), orchestrated by the **[`ai-sdlc` skill](./_agents/skills/ai_sdlc/SKILL.md)** and [`AGENTS.md`](./AGENTS.md):
 
 ```
 +=================================================================================================+
@@ -73,14 +73,14 @@ The template directories for `specs/` and `docs/` are packaged inside [`_agents/
 │       │   ├── SKILL.md           # Workflow instructions & phase-by-phase output map
 │       │   ├── scripts/           # validate_sdlc_gate.py (--init scaffolder & phase gate validator)
 │       │   └── examples/          # Seed templates for specs/ and docs/ scaffolded on skill activation
-│       │       ├── specs/         # SDD templates (baseline/, features/, plan/, templates/sdd-template.md)
+│       │       ├── specs/         # SDD templates (baseline/, features/, plan/, templates/{sdd,baseline}-template.md)
 │       │       └── docs/          # Operational report index (README.md)
 │       ├── architecture_diagram/  # Technical architecture diagrams & standalone HTML assets
 │       ├── codemender/            # Pre-build SAST vulnerability discovery, triage, and patching
 │       └── gcp_cost_estimator/    # Live GCP Billing API cost estimation & BoM calculation
 ├── specs/                         # [Created on ai-sdlc activation] Single Source of Truth for SDD
 │   ├── README.md                  # Specifications index and SDD registry
-│   ├── templates/                 # Reusable SDD templates (sdd-template.md)
+│   ├── templates/                 # Reusable SDD templates (sdd-template.md, baseline-template.md)
 │   ├── baseline/                  # Brownfield baseline specifications (as-is state)
 │   ├── features/                  # Proposed feature specifications & implementation plans
 │   └── plan/                      # Living execution progress reports and milestone tracking
@@ -160,10 +160,10 @@ Every development task is guided by [`_agents/skills/ai_sdlc/SKILL.md`](./_agent
 
 ## 🛠️ Integrated Skills & Capabilities
 
-- **`ai-sdlc`:** Master 3-Phase AI-SDLC orchestrator guiding developers through Inception, SDD Execution, and Operation with automatic `specs/` & `docs/` workspace scaffolding (`--init`), proactive clarification questions (`ask_question`), and phase gate validation (`validate_sdlc_gate.py`).
-- **`codemender`:** Pre-build SAST orchestration discovering vulnerabilities (`cm find`), generating PoC exploit verification (`cm verify`), and producing remediated code diffs (`cm fix`).
-- **`gcp_cost_estimator`:** Enterprise cloud cost modeling querying real-time unit pricing strictly from the live Google Cloud Billing API (zero local caching) and calculating itemized BoMs with CUD savings.
-- **`architecture_diagram`:** Generates professional, dark-themed technical system diagrams with interactive SVG/HTML companion visualizers.
+- **`ai-sdlc` (`_agents/skills/ai_sdlc/`):** Master 3-Phase AI-SDLC orchestrator guiding developers through Inception, SDD Execution, and Operation with automatic `specs/` & `docs/` workspace scaffolding (`--init`), proactive clarification questions (`ask_question`), and phase gate validation (`validate_sdlc_gate.py`).
+- **`codemender` (`_agents/skills/codemender/`):** Pre-build SAST orchestration discovering vulnerabilities (`cm find`), generating PoC exploit verification (`cm verify`), and producing remediated code diffs (`cm fix`).
+- **`gcp-cost-estimator` (`_agents/skills/gcp_cost_estimator/`):** Enterprise cloud cost modeling querying real-time unit pricing strictly from the live Google Cloud Billing API (zero local caching) and calculating itemized BoMs with CUD savings.
+- **`architecture-diagram` (`_agents/skills/architecture_diagram/`):** Generates professional, dark-themed technical system diagrams with interactive SVG/HTML companion visualizers.
 
 ---
 

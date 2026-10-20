@@ -14,7 +14,7 @@ Under NO circumstances may an AI agent or orchestrator rely on hardcoded keyword
 
 ---
 
-## 1. Google ADK Architectural Framework & Agent Boundaries
+## 1. Google ADK Architectural Framework, Agent Boundaries & Runtime (Rule 11)
 
 ### 1.1 Standard Agent Hierarchy & Active Boundaries
 To ensure modularity, maintainability, and clean isolation, all agents must operate within explicit boundaries:
@@ -61,7 +61,7 @@ To ensure modularity, maintainability, and clean isolation, all agents must oper
 
 ---
 
-## 2. Mandatory Model-Driven Reasoning & Zero Hardcoded / Regex Logic
+## 2. Mandatory Model-Driven Reasoning & Zero Hardcoded / Regex Logic (Rule 11 Continued)
 
 ### 2.1 Prohibited Anti-Patterns in AI Agents
 
@@ -90,7 +90,7 @@ Every multi-agent solution must define a formal, mutually exclusive, collectivel
 
 ---
 
-## 3. Live Environment Agent Evaluation (`agents-cli eval`)
+## 3. Live Environment Agent Evaluation (`agents-cli eval`) (Rule 12)
 
 Agent quality, reasoning fidelity, and trajectory correctness must be continuously verified using the official **Google Agents CLI (`agents-cli eval`)**.
 

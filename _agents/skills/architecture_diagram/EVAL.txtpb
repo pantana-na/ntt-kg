@@ -8,7 +8,7 @@ timeout_seconds: 300
 cases {
   name: "generate_3_tier_web_app"
   prompt: "Create a high-level architecture diagram for a 3-tier web application (Frontend, Backend API, PostgreSQL Database)."
-  expectations: "The agent generates a standalone HTML file for the architecture diagram"
+  expectations: "The agent generates a markdown architecture document (.md) and a companion standalone HTML file (.html) inside the docs/ folder"
   expectations: "The agent uses view_file to examine the template at resources/template.html"
   expectations: "The generated HTML contains a 4-part layout (Header, Main SVG, Summary Cards, Footer)"
   expectations: "The agent suggests opening the file in a browser using xdg-open or open"

@@ -47,4 +47,4 @@ This project strictly delineates workloads across two execution runtimes:
 
 ## Enforcement & Compliance
 - **Automated Validation:** Rules are enforced by CI/CD quality gates, pre-commit checks, and evaluation suites.
-- **Specification Linkage:** Every specification authored in [`specs/features/`](../../specs/features/) must verify compliance against each rule using Section 6 of [`specs/templates/sdd-template.md`](../../specs/templates/sdd-template.md).
+- **Specification Linkage:** Every specification authored in `specs/features/` (scaffolded from [`_agents/skills/ai_sdlc/examples/specs/features/`](../skills/ai_sdlc/examples/specs/features/)) must verify compliance against each rule using Section 6 of [`sdd-template.md`](../skills/ai_sdlc/examples/specs/templates/sdd-template.md) and [`baseline-template.md`](../skills/ai_sdlc/examples/specs/templates/baseline-template.md).

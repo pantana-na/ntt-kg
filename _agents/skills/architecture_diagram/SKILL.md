@@ -89,7 +89,7 @@ Use specific `rgba` fills and hex strokes to categorize components:
 ```svg
 <!-- Background Grid Pattern -->
 <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-  <path d="M 40 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+  <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
 </pattern>
 ```
 

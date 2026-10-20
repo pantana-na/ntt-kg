@@ -4,7 +4,7 @@ This directory houses **Baseline Specifications** for existing (brownfield) code
 
 ## Two-Track Brownfield Baseline Mandate
 
-Under the **Spec-Driven Development (SDD)** protocol ([`_agents/rules/ai_sdlc_and_sdd_standards.md`](../_agents/rules/ai_sdlc_and_sdd_standards.md)) and the [Brownfield Assessment Playbook](../_agents/skills/ai_sdlc/references/brownfield_assessment_playbook.md):
+Under the **Spec-Driven Development (SDD)** protocol ([`_agents/rules/ai_sdlc_and_sdd_standards.md`](../../_agents/rules/ai_sdlc_and_sdd_standards.md)) and the [Brownfield Assessment Playbook](../../_agents/skills/ai_sdlc/references/brownfield_assessment_playbook.md):
 
 1. **Baseline Before Delta:** Before modifying any existing subsystem, modernizing legacy apps, or refactoring untested code, an accurate Baseline SDD reflecting the "as-is" system must be generated here using [`../templates/baseline-template.md`](../templates/baseline-template.md).
 2. **Two-Track Assessment Coverage:**
