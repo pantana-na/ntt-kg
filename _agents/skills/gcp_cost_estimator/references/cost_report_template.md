@@ -61,7 +61,7 @@ pie title Monthly Cost by Service Category (Total: $[Total_Monthly_OnDemand])
 | `PROD` | **Cloud SQL** | PostgreSQL DB | `db-custom-4-16384` HA | 730 hours (HA) | $[rate] / hr total | Billing API (`[SKU-ID]`) | $[cost] | Confirmed: Regional HA, [size] GB SSD |
 | `PROD` | **Vertex AI (`agent_runtime`)** | Gemini + ADK Multi-Hop | [in] in / [out] out tokens | [turns] turns × [hops] hops | $[rate] / 1M in/out | cloud.google.com/vertex-ai/generative-ai/pricing | $[cost] | Confirmed: [model], [hops] hops/turn + Model Armor |
 | `SHARED` | **Vertex AI (`agents-cli eval`)** | Live Eval Runs | [cases] cases × [runs] runs/mo | [eval_tokens] tokens | $[rate] / 1M tokens | cloud.google.com/vertex-ai/generative-ai/pricing | $[cost] | Confirmed: CI/CD live evaluation gate |
-| `PROD` | **Networking & Security** | Pattern 1 ALB + IAP / Egress | Premium Tier Egress | [usage] GB egress | $[rate] / GB | cloud.google.com/vpc/network-pricing | $[cost] | Confirmed: IAM Ingress Pattern [1/2/3] |
+| `PROD` | **Networking & Security** | Pattern 1A ALB+IAP / 1B Direct IAP / Egress | Premium Tier Egress | [usage] GB egress | $[rate] / GB | cloud.google.com/vpc/network-pricing | $[cost] | Confirmed: IAM Ingress Pattern [1A/1B/2/3] |
 | **Total** | | | | | | | **$[Total_Monthly_OnDemand]** | |
 
 ---
@@ -78,7 +78,7 @@ pie title Monthly Cost by Service Category (Total: $[Total_Monthly_OnDemand])
 - **Database Specifications:** [e.g., Cloud SQL PostgreSQL db-custom-4-16384 HA in Prod, db-custom-1-3840 zonal in Non-Prod]
 - **Object Storage:** [e.g., 500 GB Standard storage, 50,000 Class A ops, 200,000 Class B ops]
 - **AI / ADK Agent Runtime (`agent_runtime`):** [e.g., 50,000 turns/month, 2 reasoning/tool hops per turn, average 1,500 input / 500 output tokens per hop, Model Armor enabled, `agents-cli eval` runs/month]
-- **IAM Ingress Pattern & Egress:** [e.g., Pattern 1 (ALB + Serverless NEG + IAP) / Pattern 2 / Pattern 3, 250 GB outbound internet egress on Premium Tier]
+- **IAM Ingress Pattern & Egress:** [e.g., Pattern 1A (ALB + Cloud Armor + IAP) / Pattern 1B (Direct Cloud Run IAP, $0 ALB) / Pattern 2 / Pattern 3, 250 GB outbound internet egress on Premium Tier]
 
 ---
 

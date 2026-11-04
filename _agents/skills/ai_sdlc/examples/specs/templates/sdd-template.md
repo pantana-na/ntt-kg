@@ -137,7 +137,7 @@ sequenceDiagram
 ## 3. Security, Privacy, Compliance & `[AI-Agent Only]` SAIF Alignment
 
 ### 3.1 Input/Output Guardrails & Injection Defenses
-- **Universal Application Defenses:** Cloud Armor WAF rules (OWASP Top 10, SQLi, XSS), strict input schema validation (Pydantic/Zod), parameterized SQL queries, output HTML escaping + Content Security Policy (CSP), Sensitive Data Protection (Cloud DLP) PII classification/redaction, pre-build **CodeMender** SAST (`cm find/verify/fix`), Artifact Analysis CVE scanning, and **SLSA Level 3 provenance + Binary Authorization**.
+- **Universal Application Defenses:** Cloud Armor WAF rules (OWASP Top 10, SQLi, XSS — *Pattern 1A/2*) or Direct Cloud Run IAP + strict app-layer rate/schema controls (*Pattern 1B*), strict input schema validation (Pydantic/Zod), parameterized SQL queries, output HTML escaping + Content Security Policy (CSP), Sensitive Data Protection (Cloud DLP) PII classification/redaction, pre-build **CodeMender** SAST (`cm find/verify/fix`), Artifact Analysis CVE scanning, and **SLSA Level 3 provenance + Binary Authorization**.
 - **`[AI-Agent Only]` 4-Point Inline Model Armor + Cloud DLP Callbacks:** *(Omit for `Regular App`)*
   1. `before_agent_callback` & `before_model_callback`: Direct Prompt Injection (`PIJ`) screening via **Model Armor** + bidirectional **Cloud DLP** PII/PCI tokenization (`EDH`) prior to LLM, context cache, `agentengine://`, or logs.
   2. `after_tool_callback`: Mandatory **Indirect Prompt Injection (`PIJ`)** scan via **Model Armor** across all untrusted RAG chunks, database fields, and external API tool outputs before re-entering model context.
@@ -145,7 +145,7 @@ sequenceDiagram
 
 ### 3.2 Identity Delegation, Authorization & Execution Sandboxing
 - **Universal Zero-Trust IAM & Container Sandboxing (Rule 10):**
-  - **Ingress Pattern:** Pattern 1 (**Global External ALB + Cloud Armor + Identity-Aware Proxy `[Default]`**) or Pattern 2 (**App-Level OAuth 2.0/OIDC + Cloud Armor**); `--no-allow-unauthenticated` and zero `allUsers` / `allAuthenticatedUsers` bindings (`constraints/iam.allowedPolicyMemberDomains`). *(Pattern 3 restricted strictly to public non-sensitive static pages).*
+  - **Ingress Pattern:** Pattern 1A (**Global External ALB + Cloud Armor + Identity-Aware Proxy `[Default for Tier-1/Regulated]`**), Pattern 1B (**Direct Cloud Run IAP `--iap` + `INGRESS_TRAFFIC_ALL` + `x-goog-iap-jwt-assertion` JWT check + ADR trade-off `[Internal Workforce / Single-Region / Cost-Optimized]`**), or Pattern 2 (**App-Level OAuth 2.0/OIDC + Cloud Armor**); `--no-allow-unauthenticated` and zero `allUsers` / `allAuthenticatedUsers` bindings (`constraints/iam.allowedPolicyMemberDomains`). *(Pattern 3 restricted strictly to public non-sensitive static pages).*
   - **Service Identity & Runtime Isolation:** Dedicated per-service IAM Service Accounts (zero default compute SAs), row/tenant-level RBAC/ACLs, non-root container user, and read-only root filesystem where supported.
 - **`[AI-Agent Only]` Agentic Identity & Anti-Confused-Deputy (`SAIF 2.0`):** *(Omit for `Regular App`)*
   - **Caller Propagation (`User Auth`):** Propagate down-scoped end-user OAuth 2.0 access tokens to `FunctionTool`s and RAG data stores alongside attested `Agent Identity`—never query user-scoped data using an over-privileged shared agent SA.
@@ -165,7 +165,7 @@ sequenceDiagram
 
 - **`[AI-Agent Only]` Google SAIF & SAIF 2.0 15-Risk Mitigation Summary:** *(Omit or mark `N/A` when `Workload Type` is `Regular App`; see full catalog in [`solution_design_compliance_template.md`](../../_agents/skills/gcp_well_architected_saif/references/solution_design_compliance_template.md))*
   - **Data (`DP`, `UTD`, `EDH`):** Locked ingestion IAM + SHA-256 checksums; zero customer-data training; `before_agent_callback` Cloud DLP tokenization.
-  - **Infrastructure (`MST`, `MXF`, `MDT`, `DMS`):** CodeMender + SLSA L3 + Binary Auth; VPC-SC + CMEK; Terraform drift checks; Cloud Armor rate limits + ADK step/token ceilings + Provisioned Throughput spillover.
+  - **Infrastructure (`MST`, `MXF`, `MDT`, `DMS`):** CodeMender + SLSA L3 + Binary Auth; VPC-SC + CMEK; Terraform drift checks; Cloud Armor / app-level per-user rate limits + ADK step/token ceilings + Provisioned Throughput spillover.
   - **Model (`MRE`, `IIC`, `PIJ`, `MEV`, `SDD`, `ISD`):** Per-user throttling & SCC AI Protection; vetted `FunctionTool` allowlist; Model Armor on `before_agent` (Direct `PIJ`) and `after_tool_callback` (Indirect `PIJ`); input canonicalization; `User Auth` row/doc ACLs + `after_model_callback` DLP scrubbing.
   - **Application & Agent (`IMO`, `RAC`):** $1.000$ groundedness citations, Pydantic validation, safe UI escaping & URL allowlist (`IMO`); read-only retrieval subagents, `User Auth` propagation, deterministic policy caps, externalized signed HITL gate, and idempotency keys (`RAC`).
 
@@ -174,7 +174,7 @@ sequenceDiagram
 ## 4. Resiliency, Reliability & State Integrity
 
 ### 4.1 Execution Boundaries & `[AI-Agent Only]` Anti-Loop Safeguards
-- **Universal Execution Boundaries:** Bounded HTTP/RPC/DB connection and request timeouts, Cloud Armor per-user/IP rate limits, bounded retry budgets, API pagination limits, and async queue Dead-Letter Queues (DLQs).
+- **Universal Execution Boundaries:** Bounded HTTP/RPC/DB connection and request timeouts, Cloud Armor (*Pattern 1A/2*) or app-layer (*Pattern 1B*) per-user/IP rate limits, `max-instances` caps, bounded retry budgets, API pagination limits, and async queue Dead-Letter Queues (DLQs).
 - **`[AI-Agent Only]` Anti-Loop & Denial-of-ML-Service Safeguards (`SAIF DMS`):** *(Omit for `Regular App`)* Explicit ADK `max_iterations` / step ceilings, subagent recursion cycle detection, and per-session token/wall-clock execution budgets.
 
 ### 4.2 Idempotency & Transactional Consistency
@@ -193,7 +193,7 @@ sequenceDiagram
 ### 5.1 End-to-End Tracing, Health Probes & Span Hierarchy
 - **Universal Probes, SLOs & Distributed Tracing (Rule 6):**
   - Unauthenticated container-local **`GET /healthz`** startup and liveness probe verifying dependency readiness; Cloud Monitoring **SLO burn-rate alerts** paged on error-budget consumption.
-  - **OpenTelemetry Cloud Trace** propagating W3C `traceparent` across `ALB Ingress -> Cloud Run UI/API -> Cache/Database/Queue`.
+  - **OpenTelemetry Cloud Trace** propagating W3C `traceparent` across `ALB or Direct IAP Ingress -> Cloud Run UI/API -> Cache/Database/Queue`.
 - **`[AI-Agent Only]` AgentOps Span Hierarchy:** *(Omit for `Regular App`)* Extend OpenTelemetry spans across `Cloud Run Proxy -> Model Armor/DLP Pre-Hook -> ADK Orchestrator -> Subagent -> Gemini LLM Call -> FunctionTool -> Post-Tool PIJ Scan`.
 
 ### 5.2 Structured Logging & Correlation
@@ -210,7 +210,7 @@ sequenceDiagram
 ## 6. Performance Optimization, FinOps & Sustainability
 
 ### 6.1 Latency Engineering & Caching Strategy
-- **Universal Performance Optimization (WAF Pillar 5):** Co-locate compute, KMS, and databases in a single GCP region; leverage **Cloud CDN** (static assets), **Memorystore** (hot state/read cache), database query indexing & connection pooling, and Cloud Run **Startup CPU Boost** + `prod` `min-instances`.
+- **Universal Performance Optimization (WAF Pillar 5):** Co-locate compute, KMS, and databases in a single GCP region; leverage **Cloud CDN** (*static assets on Pattern 1A/2*), **Memorystore** (hot state/read cache), database query indexing & connection pooling, and Cloud Run **Startup CPU Boost** + `prod` `min-instances`.
 - **`[AI-Agent Only]` LLM Latency & Context Caching:** *(Omit for `Regular App`)* **Vertex AI Context Caching** for system instructions/schemas, end-to-end **SSE token streaming** (`X-Accel-Buffering: no`), and parallel asynchronous `FunctionTool` fan-out.
 
 ### 6.2 Unit-Cost Modeling, Sustainability & `[AI-Agent Only]` Token Economics
@@ -226,8 +226,8 @@ sequenceDiagram
 
 | ADR ID | Competing WAF Pillars / Constraints | Architectural Tension | Selected Resolution & Justification |
 | :--- | :--- | :--- | :--- |
-| **ADR-01** | **Security & Compliance** vs. **Performance (Latency)** | Inline Zero-Trust auth, Cloud Armor, CMEK/VPC-SC *(and `[AI-Agent Only]` 4-point Model Armor + DLP inspection)* vs. strict p95 latency budget. | Co-locate all compute, security, KMS, and data services in the same GCP region; use connection pooling/caching *(and `[AI-Agent Only]` Context Caching + SSE streaming)*. |
-| **ADR-02** | **Reliability (HA)** vs. **Cost Optimization** | Multi-zone/multi-region HA *(and `[AI-Agent Only]` reserved GenAI Provisioned Throughput)* 24/7 vs. baseline infrastructure spend. | Run multi-zone HA + CUDs *(and baseline GSUs + PayGo spillover)* in `prod`, while scaling `nonprod` to zero (`min-instances=0`). |
+| **ADR-01** | **Security & Compliance** vs. **Performance (Latency)** | Inline Zero-Trust auth, Cloud Armor / IAP JWT verification, CMEK/VPC-SC *(and `[AI-Agent Only]` 4-point Model Armor + DLP inspection)* vs. strict p95 latency budget. | Co-locate all compute, security, KMS, and data services in the same GCP region; use connection pooling/caching *(and `[AI-Agent Only]` Context Caching + SSE streaming)*. |
+| **ADR-02** | **Reliability (HA)** vs. **Cost Optimization** | Multi-zone/multi-region HA *(and `[AI-Agent Only]` reserved GenAI Provisioned Throughput)* 24/7 vs. baseline infrastructure spend. | Run multi-zone HA + CUDs *(and baseline GSUs + PayGo spillover)* in `prod`, while scaling `nonprod` to zero (`min-instances=0`) *(and if Pattern 1B Direct Cloud Run IAP is selected, document `$0` LB baseline vs. single-region `*.run.app` & no Cloud Armor WAF)*. |
 | **ADR-03** | **Sustainability (`CFE %`)** vs. **Data Sovereignty & Latency** | Lowest-carbon region vs. regulatory residency (`constraints/gcp.resourceLocations`) and end-user RTT. | Filter candidate regions by Assured Workloads / residency and RTT bounds first, then select the highest **`CFE %`** region in that compliant set. |
 
 ### ADR-01: [Decision Title]
@@ -245,7 +245,7 @@ sequenceDiagram
 | ID | Component / Flow | Failure Mode | Blast Radius & User Impact | Detection Signal (SLO / Alert / Probe) | Automated Mitigation & WAF Graceful Degradation |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **FMEA-01** | Primary Database / Upstream API *(Universal)* | Regional outage, connection pool exhaustion, or 5xx timeout | Write operations fail; uncached reads stall | `/healthz` readiness failure, Cloud Monitoring 5xx & latency SLO burn-rate alert | Trip circuit breaker after bounded retries (exponential backoff + jitter); return `503 UPSTREAM_UNAVAILABLE_DEGRADED` or verified `is_cached_degraded: true` reference data (zero mockup records) |
-| **FMEA-02** | Edge / Auth Layer *(Universal)* | Invalid/expired OAuth2/IAP token or L7 DDoS traffic spike | Unauthorized requests or edge saturation | Cloud Armor rate-limit metrics & 401/403 spike alert | Block/throttle at Global ALB + Cloud Armor edge before reaching Cloud Run; trigger client token refresh flow |
+| **FMEA-02** | Edge / Auth Layer *(Universal)* | Invalid/expired OAuth2/IAP token or L7 DDoS traffic spike | Unauthorized requests or edge saturation | Cloud Armor / IAP 401/403 & app rate-limit spike alert | Block/throttle at Global ALB + Cloud Armor edge (*Pattern 1A/2*) or Google IAP proxy + `x-goog-iap-jwt-assertion` JWT check + `max-instances`/per-user rate caps (*Pattern 1B*); trigger client token refresh flow |
 | **FMEA-03** | CI/CD Release *(Universal)* | Bad container revision fails startup or regresses error budget | Elevated 5xx on canary slice | `/healthz` probe failure, post-deploy smoke test failure, or SLO alert | Halt canary rollout and automatically roll Cloud Run traffic back to last healthy SHA-pinned revision |
 | **FMEA-04** | **`[AI-Agent Only]`** Tool / RAG Ingestion | Indirect Prompt Injection (`PIJ`) embedded in untrusted external data | Attempted prompt hijack or data exfiltration | `after_tool_callback` Model Armor block event + SCC AI Protection alert | Quarantine tool payload before LLM re-entry, abort turn safely, and log sanitized security event |
 | **FMEA-05** | **`[AI-Agent Only]`** Vertex AI / ADK Runtime | 429 token quota burst, reasoning loop, or ungrounded output | Delayed agent response or blocked action | ADK `max_iterations` guard, Vertex 429 metric, or `after_model_callback` check | Spill over from Provisioned Throughput to PayGo; enforce `max_iterations` timeout; require externalized HITL signature before any mutation |

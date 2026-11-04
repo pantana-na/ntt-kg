@@ -109,7 +109,7 @@ sequenceDiagram
 | :--- | :--- | :--- | :--- | :--- |
 | **Google Cloud WAF 6 Pillars** | **Universal** | *(e.g., Single-zone DB, no SLOs, no CMEK/VPC-SC, no FinOps labels or CFE % tracking)* | `Non-Compliant` \| `Partial` | Remediate across Sections 3–6 of target Feature SDD. |
 | **Pre-Build CodeMender SAST & SLSA L3 (Rules 3–4)** | **Universal** | *(Baseline scan: `docs/codemender-01-vulnerability-scan-report.md`; no Binary Auth)* | `Pending` \| `Audited` | Remediate Critical/High findings; add SLSA L3 + Binary Auth. |
-| **Cloud Run `/healthz`, Unified `.env` & Zero-Trust IAM (Rules 6, 8, 10)** | **Universal** | *(e.g., No `/healthz`; `Web.config`/`.env.*` sprawl; legacy auth or `allUsers`)* | `Non-Compliant` \| `Compliant` | Add `/healthz`, single `.env` + Secret Manager, ALB + Cloud Armor + IAP/OAuth2. |
+| **Cloud Run `/healthz`, Unified `.env` & Zero-Trust IAM (Rules 6, 8, 10)** | **Universal** | *(e.g., No `/healthz`; `Web.config`/`.env.*` sprawl; legacy auth or `allUsers`)* | `Non-Compliant` \| `Compliant` | Add `/healthz`, single `.env` + Secret Manager, Pattern 1A ALB+Cloud Armor+IAP / 1B Direct Cloud Run IAP / 2 OAuth2. |
 | **4-Step RCA & Zero Mockup Fallbacks (Rule 13)** | **Universal** | *(e.g., Silent catch blocks or hardcoded fallback dicts)* | `Non-Compliant` \| `Compliant` | Replace with transparent WAF graceful degradation. |
 | **Dual-Runtime, Google ADK, SAIF 2.0 & Live Eval (Rules 11–12)** | **`[AI-Agent Only]`** *(Mark `N/A` for `Regular App`)* | *(e.g., Inline LLM SDK in web app, regex routing, zero Model Armor/DLP callbacks, no live evals)* | `Non-Compliant` \| `N/A` | Decouple to `agent_runtime` (`google-adk`) + 4-point callbacks + `agents-cli eval`. |
 

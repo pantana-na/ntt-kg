@@ -12,7 +12,7 @@ Generate professional, dark-themed technical architecture diagrams and documenta
 - **Architectural & Security Governance Alignment:** Every generated topology enforces **[`gcp-well-architected-saif`](../gcp_well_architected_saif/SKILL.md)** alongside the 3 consolidated governance rules:
   - [`ai_sdlc_and_sdd_standards.md`](../../rules/ai_sdlc_and_sdd_standards.md) (*Dual-Runtime boundary, SDD linkage & Rule 13 WAF Graceful Degradation*)
   - [`google_adk_and_agent_runtime.md`](../../rules/google_adk_and_agent_runtime.md) (*Rules 11–12: `agent_runtime` ADK hierarchy, 4-point Model Armor/Cloud DLP hooks, `User Auth` & Externalized HITL*)
-  - [`devops_security_and_quality_standards.md`](../../rules/devops_security_and_quality_standards.md) (*Rules 1–10: `cloud_run` `/healthz`, Global ALB + Cloud Armor + IAP/OAuth2 Zero-Trust Ingress, VPC-SC & CMEK*)
+  - [`devops_security_and_quality_standards.md`](../../rules/devops_security_and_quality_standards.md) (*Rules 1–10: `cloud_run` `/healthz`, Pattern 1A ALB+Cloud Armor+IAP / Pattern 1B Direct Cloud Run IAP / Pattern 2 OAuth2 Zero-Trust Ingress, VPC-SC & CMEK*)
 
 ## Scope
 
@@ -44,7 +44,7 @@ Based on
 2. **Mandatory Clarification of Unknowns (`ask_question`):**
    - If any architectural boundary or topology detail is unknown or ambiguous, **pause and ask the user via `ask_question`** before generating the diagram:
      - **Diagram Mode:** Are we generating a **Target Dual-Runtime Architecture** (Greenfield) or a **Brownfield "As-Is vs. Target Modernization" Comparison** (e.g., Legacy 3-Tier/.NET $\rightarrow$ Cloud Run + Agent Runtime)?
-     - **WAF Zero-Trust IAM & Ingress Edge Pattern:** Pattern 1 (External HTTPS Load Balancer + Cloud Armor WAF + Serverless NEG + IAP — **Default Recommended** for internal enterprise & AI workloads), Pattern 2 (Cloud Armor + Direct Ingress + App-Level OAuth 2.0/OIDC), or Pattern 3 (Direct Public Frontend `invoker-iam-disabled: true` — strictly restricted to anonymous public non-sensitive static/marketing pages)?
+     - **WAF Zero-Trust IAM & Ingress Edge Pattern:** Pattern 1A (External HTTPS Load Balancer + Cloud Armor WAF + Serverless NEG + IAP — **Default for Tier-1/Regulated**), Pattern 1B (Direct Cloud Run IAP `--iap` without Load Balancer — **Internal Workforce / Single-Region / Cost-Optimized**), Pattern 2 (Cloud Armor + Direct Ingress + App-Level OAuth 2.0/OIDC), or Pattern 3 (Direct Public Frontend `invoker-iam-disabled: true` — strictly restricted to anonymous public non-sensitive static/marketing pages)?
      - **Perimeter, Encryption & Resilience (WAF Pillars 2 & 3):** Should the diagram depict a **VPC Service Controls (`VPC-SC`)** perimeter, **Private Service Connect (PSC)** endpoints, **Cloud KMS (`CMEK` / HSM / EKM)** encryption, and multi-zone/multi-region HA failover?
      - **Data & Integration Tiers:** Which specific databases (Cloud SQL, Spanner, Firestore, BigQuery, Vertex AI Search / Vector Search, or legacy SQL Server) and external APIs should be depicted?
 3. **Generate Markdown & Companion Interactive HTML:**

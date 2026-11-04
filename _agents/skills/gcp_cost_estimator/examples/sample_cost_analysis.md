@@ -12,7 +12,7 @@ This example demonstrates how the `gcp-cost-estimator` skill analyzes an archite
 3. **Data Lake & Warehouse:** Cloud Storage (Standard Bucket) + BigQuery (Data analytics & partitioned queries).
 4. **Web UI & Streaming Proxy (`cloud_run`):** Cloud Run (2 vCPU, 4 GB RAM, stateless React UI + FastAPI SSE streaming proxy with `/healthz` probe).
 5. **AI Agent Runtime (`agent_runtime`):** Gemini Enterprise Agent Platform running Google ADK (`google-adk`) with pinned `gemini-2.5-flash-001`, 4-point **Model Armor + Cloud DLP** callbacks, and `agents-cli eval` CI/CD gates.
-6. **Zero-Trust Edge & Ingress (Pattern 1):** Global External Application Load Balancer + **Cloud Armor** WAF + **Identity-Aware Proxy (IAP)**.
+6. **Zero-Trust Edge & Ingress (Pattern 1A):** Global External Application Load Balancer + **Cloud Armor** WAF + **Identity-Aware Proxy (IAP)**.
 
 ---
 
@@ -29,7 +29,7 @@ The agent formulates targeted questions covering every discovered component with
 > 6. **Cloud Storage Volume & Ops**: What total volume of data will be stored, and how many monthly Class A (upload) / Class B (read) operations are expected?
 > 7. **BigQuery Queries**: How many TB of data will queries scan each month under the on-demand model?
 > 8. **ADK Agent Runtime (`agent_runtime`), Guardrails & Live Evals**: Which pinned Gemini model (`gemini-2.5-flash-001` vs. `gemini-2.5-pro-001`) will be used? How many user turns and multi-hop tool calls per month do you anticipate, what is your average input/output token count per hop, is Context Caching enabled, and how many `agents-cli eval` runs occur monthly?
-> 9. **Zero-Trust Edge (ALB + Cloud Armor + IAP), KMS & Egress**: How many ALB forwarding rules, Cloud Armor policies, CMEK keys, and GB of outbound internet data transfer will be served monthly?
+> 9. **Zero-Trust Edge (ALB + Cloud Armor + IAP vs. Direct Cloud Run IAP), KMS & Egress**: Which Zero-Trust ingress pattern applies (Pattern 1A ALB + Cloud Armor + IAP vs. Pattern 1B Direct Cloud Run IAP `$0` fixed LB baseline), and how many ALB forwarding rules, Cloud Armor policies, CMEK keys, and GB of outbound internet data transfer will be served monthly?
 
 **User Confirms Exact Values:**
 - **Region**: `us-central1`
@@ -40,7 +40,7 @@ The agent formulates targeted questions covering every discovered component with
 - **Cloud Storage**: 500 GB-months Standard storage, 50,000 Class A ops, 200,000 Class B ops.
 - **BigQuery**: 2 TB scanned queries/month (on-demand), 200 GB active storage.
 - **ADK Agent Runtime & Guardrails**: Pinned `gemini-2.5-flash-001` on `agent_runtime`, 50,000 turns/month × 2 hops/turn, average 1,500 input tokens / 500 output tokens per hop, 4-point Model Armor + Cloud DLP enabled, 10 `agents-cli eval` runs/month (100 golden cases).
-- **Load Balancer, Cloud Armor & Egress**: Pattern 1 (1 ALB forwarding rule + Cloud Armor policy + IAP), 150 GB Premium internet egress.
+- **Load Balancer, Cloud Armor & Egress**: Pattern 1A (1 ALB forwarding rule + Cloud Armor policy + IAP), 150 GB Premium internet egress.
 
 ---
 

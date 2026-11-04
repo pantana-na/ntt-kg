@@ -28,10 +28,10 @@ WAF_PILLARS: List[Tuple[str, str, List[str]]] = [
     ),
     (
         "Pillar 2: Security, Privacy, and Compliance",
-        "Zero Trust (IAP/OAuth2 + Cloud Armor), VPC-SC, CMEK/KMS, Shift-Left SAST (CodeMender), SLSA/Binary Auth",
+        "Zero Trust (Pattern 1A ALB+Cloud Armor+IAP, Pattern 1B Direct Cloud Run IAP+JWT check, or Pattern 2 OAuth2), VPC-SC, CMEK/KMS, Shift-Left SAST (CodeMender), SLSA/Binary Auth",
         [
             r"security,?\s*privacy,?\s*(?:&|and)?\s*compliance|zero trust|zero-trust",
-            r"cloud armor|identity-aware proxy|\biap\b|oauth",
+            r"cloud armor|identity-aware proxy|\biap\b|x-goog-iap-jwt-assertion|oauth",
             r"vpc service controls|\bvpc-sc\b|private service connect",
             r"\bcmek\b|cloud kms|cloud hsm|cloud ekm",
         ],
@@ -41,7 +41,7 @@ WAF_PILLARS: List[Tuple[str, str, List[str]]] = [
         "Multi-zone/multi-region HA, RTO/RPO, idempotency/failover (or Provisioned Throughput spillover), circuit breakers & graceful degradation",
         [
             r"reliability|resiliency",
-            r"\brto\b|\brpo\b|high availability|multi-zone|multi-region",
+            r"\brto\b|\brpo\b|high availability|multi-zone|multi-region|single-region",
             r"graceful degradation|circuit breaker|exponential backoff",
             r"idempotency|idempotent|failover|provisioned throughput|spillover",
         ],

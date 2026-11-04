@@ -21,7 +21,8 @@ Because several functional, WAF, and SAIF 2.0 factors are unspecified, the agent
 1. **Scope, Externalized HITL & Refund Policy Caps (SAIF 2.0 `RAC`):** What is the deterministic maximum per-transaction refund cap enforced by the external policy gateway (paired with signed Human-in-the-Loop confirmation) vs. routing directly to a Tier-2 dispute specialist queue?
 2. **Systems of Record & Data Classification:** Which database stores order and refund records (e.g., Cloud SQL PostgreSQL vs. Spanner), and does it hold PII/PCI data requiring **VPC Service Controls (`VPC-SC`) + Cloud KMS (`CMEK`)**?
 3. **WAF Zero-Trust IAM & Ingress Pattern (Rule 10 — Zero `allUsers`):**
-   - `(Recommended) Pattern 1: Identity-Aware Proxy (IAP) behind External Application Load Balancer + Cloud Armor WAF + Serverless NEG`
+   - `(Recommended for Regulated PCI/Dispute Prod) Pattern 1A: Identity-Aware Proxy (IAP) behind External Application Load Balancer + Cloud Armor WAF + Serverless NEG`
+   - `Pattern 1B: Direct Cloud Run IAP (--iap, No Load Balancer — for internal single-region / Non-Prod cost-optimized workloads)`
    - `Pattern 2: App-Level OAuth 2.0 / OIDC behind External ALB + Cloud Armor WAF with invoker-iam-disabled="true"`
    - *(Note: Pattern 3 Direct Unauthenticated Ingress is strictly prohibited for AI/dispute endpoints and restricted solely to anonymous non-sensitive static pages.)*
 4. **Companion Inception Deliverables:** Would you like to generate a WAF & SAIF Architecture Review (`docs/waf-saif-review_order_dispute.md`), a visual architecture diagram (`docs/order-dispute-architecture.md` & `.html`), and/or a live GCP cost estimate (`docs/gcp_cost_estimate_order_dispute.md`) before moving to Phase 2?
@@ -29,7 +30,7 @@ Because several functional, WAF, and SAIF 2.0 factors are unspecified, the agent
 **Developer Response:**
 - Deterministic policy cap of $100 per refund with mandatory signed user/agent HITL confirmation before execution; disputes above $100 route to the Tier-2 specialist queue.
 - Cloud SQL PostgreSQL is the system of record inside a **VPC-SC** perimeter encrypted with **CMEK**.
-- Selects **Pattern 1 (ALB + Cloud Armor + IAP)**.
+- Selects **Pattern 1A (ALB + Cloud Armor + IAP)** for PCI/dispute production *(with Pattern 1B Direct Cloud Run IAP optional for Non-Prod)*.
 - Selects generating the WAF/SAIF review and architecture diagram in `docs/`.
 
 ### Step 1.4 & Gate 1 Sign-Off

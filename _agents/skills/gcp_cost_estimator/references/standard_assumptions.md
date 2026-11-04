@@ -81,7 +81,8 @@ The agent must cross-reference every discovered architecture component against t
 
 ### 1.7 Networking, WAF Zero-Trust Ingress Pattern (Rule 10), Crypto & DevSecOps Toolchain
 - [ ] **WAF Zero-Trust IAM & Ingress Pattern (Rule 10 — Zero `allUsers`)**:
-  - **Pattern 1 (Default Recommended)**: Identity-Aware Proxy (IAP) behind Global External HTTPS Application Load Balancer + **Cloud Armor** WAF/DDoS + Serverless NEG (How many forwarding rules, Cloud Armor policies/requests, and GB processed?)
+  - **Pattern 1A (Default for Tier-1 / Regulated / External)**: Identity-Aware Proxy (IAP) behind Global External HTTPS Application Load Balancer + **Cloud Armor** WAF/DDoS + Serverless NEG (How many forwarding rules, Cloud Armor policies/requests, and GB processed?)
+  - **Pattern 1B (Internal Workforce / Single-Region / Cost-Optimized)**: Direct Cloud Run IAP (`--iap`, No Load Balancer — `$0` fixed ALB & Cloud Armor baseline; confirm single-region & ADR trade-off)
   - **Pattern 2**: App-Level OAuth 2.0 / OIDC behind External ALB + **Cloud Armor** (or direct ingress where approved) with `invoker-iam-disabled="true"`
   - **Pattern 3**: Direct Unauthenticated Ingress (`invoker-iam-disabled="true"`) — *strictly restricted to approved anonymous public non-sensitive static/marketing pages (prohibited for internal or AI workloads)*
 - [ ] **Internet Egress & Perimeter**: How many GB or TB of outbound data transfer to the public internet (Premium vs Standard Tier) and Private Service Connect (PSC) endpoints inside **VPC-SC** are expected per month?

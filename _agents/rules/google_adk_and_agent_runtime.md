@@ -154,7 +154,7 @@ All evaluation suites must assess agent trajectories across the following six co
    - All Google ADK root coordinators, specialized subagents, 4-point Model Armor/DLP callbacks, and `FunctionTool` registries deploy exclusively to the managed **Gemini Enterprise Agent Platform (`agent_runtime`)** via `agents-cli deploy --deployment-target agent_runtime`.
    - For mission-critical production workloads, size **Vertex AI Provisioned Throughput (GSUs)** for baseline load with automatic **PayGo spillover** to prevent `429 RESOURCE_EXHAUSTED` quota outages.
 2. **Web Applications, API Gateways & Thin Proxies $\rightarrow$ Google Cloud Run (`cloud_run`):**
-   - Frontend user interfaces (React/Vite), REST/SSE/WebSocket API gateways, and externalized deterministic HITL/policy verification endpoints deploy to **Google Cloud Run** behind **Global External ALB + Cloud Armor + IAP/OAuth2**, managed via Cloud Build and Terraform Infrastructure Manager.
+   - Frontend user interfaces (React/Vite), REST/SSE/WebSocket API gateways, and externalized deterministic HITL/policy verification endpoints deploy to **Google Cloud Run** behind **Pattern 1A (Global External ALB + Cloud Armor + IAP)**, **Pattern 1B (Direct Cloud Run IAP for internal single-region workforce apps)**, or **Pattern 2 (App-Level OAuth2 + Cloud Armor)**, managed via Cloud Build and Terraform Infrastructure Manager.
 
 ### 4.2 Project Manifest (`agents-cli-manifest.yaml`) & Atomic Versioning
 - Maintain `agents-cli-manifest.yaml` (`name`, `agent_directory`, `region`, `deployment_target: agent_runtime`, `base_template: adk`).

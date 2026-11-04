@@ -201,7 +201,7 @@ def validate_inception(repo_root: Path) -> Dict[str, Any]:
         "Optional Pre-Step: If raw transcripts, drawings, emails, or manuals exist, consolidate them into specs/discovery/DISCOVERY-*.md via `requirements-discovery`.",
         "Ingest specs/discovery/DISCOVERY-*.md (if present) + repo context first; then use ask_question to resolve §2.5/§8 blockers, Workload Type, personas, goals, and non-goals.",
         "Confirm runtime topology: Single-Runtime Cloud Run (`cloud_run`) for Regular Apps vs Dual-Runtime (`cloud_run` + `agent_runtime`) for AI Agent / Hybrid Apps.",
-        "Confirm Google Cloud WAF 6-Pillar posture (and SAIF 2.0 posture if AI Agent/Hybrid): Pattern 1 IAP + Cloud Armor [Default] or Pattern 2 App OAuth.",
+        "Confirm Google Cloud WAF 6-Pillar posture (and SAIF 2.0 posture if AI Agent/Hybrid): Pattern 1A ALB+Cloud Armor+IAP, Pattern 1B Direct Cloud Run IAP, or Pattern 2 App OAuth.",
         "Offer companion skills (gcp-well-architected-saif, architecture-diagram, codemender [brownfield], and gcp-cost-estimator) and obtain Gate 1 sign-off via ask_question.",
     ]
     return {

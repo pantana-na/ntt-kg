@@ -76,7 +76,7 @@ Categorize every discovered component across our **Dual-Runtime Architecture** (
 - **Storage**: Cloud Storage buckets (Standard, Nearline, Coldline, Archive, Autoclass lifecycle), Persistent Disks (`pd-balanced`, `pd-ssd`, `hyperdisk`).
 - **Analytics & Event Streaming**: BigQuery (on-demand vs capacity/editions slots), Pub/Sub, Datastream, Dataflow.
 - **Networking, Zero-Trust IAM Ingress, KMS & DevSecOps Toolchain**:
-  - **IAM Ingress Pattern (Rule 10 / WAF Pillar 2)**: Pattern 1 External HTTPS Application Load Balancer + Cloud Armor WAF + Serverless NEG + IAP (forwarding rules + L7 policies + data processed) vs. Pattern 2 (Cloud Armor + Direct OAuth 2.0 Ingress) vs. Pattern 3 (Direct Ingress `invoker-iam-disabled` strictly for public static pages).
+  - **IAM Ingress Pattern (Rule 10 / WAF Pillar 2)**: Pattern 1A External HTTPS Application Load Balancer + Cloud Armor WAF + Serverless NEG + IAP (forwarding rules + L7 policies + data processed) vs. Pattern 1B Direct Cloud Run IAP (`--iap`, `$0` fixed Load Balancer / Cloud Armor baseline for internal single-region apps) vs. Pattern 2 (Cloud Armor + Direct OAuth 2.0 Ingress) vs. Pattern 3 (Direct Ingress `invoker-iam-disabled` strictly for public static pages).
   - **Encryption & Secrets**: Cloud KMS (`CMEK` / Cloud HSM / Cloud EKM active key versions & crypto operations) and Secret Manager (active secret versions + access operations).
   - **DevSecOps & Observability**: Google Cloud Build (build minutes), Artifact Registry (container image storage) + **Artifact Analysis** (automated container vulnerability scanning), Cloud Logging & Cloud Monitoring ingestion.
 
@@ -128,7 +128,8 @@ Identify every unknown runtime variable that cannot be determined with 100% cert
 
 7. **Networking, Zero-Trust IAM Ingress Pattern, KMS & DevSecOps Toolchain:**
    - **IAM Ingress Pattern (Rule 10 / WAF Pillar 2):** Which pattern is selected?
-     - *Pattern 1 (IAP + Cloud Armor + External HTTPS Load Balancer + Serverless NEG)* $\rightarrow$ Default Recommended for internal enterprise & AI workloads; how many forwarding rules, Cloud Armor policies, and GB processed?
+     - *Pattern 1A (IAP + Cloud Armor + External HTTPS Load Balancer + Serverless NEG)* $\rightarrow$ Default for Tier-1 / regulated / external workloads; how many forwarding rules, Cloud Armor policies, and GB processed?
+     - *Pattern 1B (Direct Cloud Run IAP `--iap`, No Load Balancer)* $\rightarrow$ Permitted for internal single-region / Non-Prod cost-optimized apps (`$0` fixed ALB & Cloud Armor baseline; only standard Cloud Run & egress charges apply).
      - *Pattern 2 (App-Level OAuth 2.0 + Cloud Armor)* or *Pattern 3 (Direct Ingress `invoker-iam-disabled` strictly for public static pages)*.
    - **Cloud KMS (`CMEK` / HSM / EKM):** How many active CMEK keys and monthly cryptographic operations?
    - How much outbound internet network egress (GB/TB) and which tier (Premium vs Standard) is expected?
