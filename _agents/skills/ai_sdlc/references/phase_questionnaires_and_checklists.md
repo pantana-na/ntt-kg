@@ -15,10 +15,12 @@ This reference guide provides the structured clarification question banks (`ask_
 
 *(If raw interview scripts, drawings, emails, or manuals were provided without a Discovery Doc, first offer to consolidate them into `specs/discovery/DISCOVERY-<YYYYMMDD>-<PROJECT>.md` via [`requirements-discovery`](../../requirements_discovery/SKILL.md).)* Use `ask_question` to resolve any unknowns not already answered in `specs/discovery/` or repo files across these 5 categories:
 
-#### Category A: Business Intent, Personas & Scope
+#### Category A: Greenfield vs. Brownfield Confirmation (Ask First After 3-Signal Repo Scan), Business Intent & Scope
+- **Greenfield vs. Brownfield Scope (`Inspect First -> Confirm in First ask_question`):** Scan workspace files, `specs/discovery/`, and prompt verbs first, then confirm in the very first `ask_question` call (never blindly ask without scanning, and never silently assume an empty repo is Greenfield):
+  - *When repo has no application code:* Confirm whether this is **(a) True Greenfield** (net-new system from scratch $\rightarrow$ skip `specs/baseline/`) or **(b) External-Legacy Brownfield** (new repo created to migrate/strangle/replace an existing legacy app or DB living elsewhere $\rightarrow$ link legacy repo/SQL schemas for `specs/baseline/` or run [`requirements-discovery`](../../requirements_discovery/SKILL.md)).
+  - *When repo already contains code:* Confirm whether existing files are **(a) Brownfield Baseline to Preserve/Extend** (*Track A* or *Track B* $\rightarrow$ codify `specs/baseline/` + characterization tests first), **(b) Throwaway Prototype / Starter Boilerplate** to replace cleanly (**Greenfield** SDD), or **(c) Existing Monorepo + Net-New Bounded Service** alongside existing services.
 - **Problem & Objective:** What is the core problem statement and measurable success criteria for this feature/system?
 - **Target Personas:** Who are the primary users (e.g., internal enterprise employees, external customers, operations engineers, or automated API consumers)?
-- **Greenfield vs. Brownfield Scope:** Is this a brand-new capability or an enhancement/refactoring of an existing subsystem (requiring a `specs/baseline/` reverse-engineering baseline first)?
 - **Non-Goals:** Which adjacent features or integrations should be explicitly excluded from this iteration?
 
 #### Category B: Workload Type (`Regular App` vs. `AI Agent` / `Hybrid`) & Runtime Allocation

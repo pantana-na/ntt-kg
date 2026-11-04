@@ -2,7 +2,10 @@
 
 This playbook provides detailed technical procedures for **Phase 1 (Step 1.1)** and **Phase 2 (Step 2.0: Brownfield Baseline Discovery & Codification)** of the [`ai-sdlc` skill](../SKILL.md).
 
-Whenever an agent assesses an existing codebase, it must first classify the codebase into **Track A (Legacy Enterprise / 3-Tier / .NET Framework)**, **Track B (Modern Cloud-Native Lacking Docs & Tests)**, or a **Hybrid** of both, and produce a comprehensive Baseline SDD in `specs/baseline/` using [`baseline-template.md`](../examples/specs/templates/baseline-template.md).
+Whenever an agent activates [`ai-sdlc`](../SKILL.md), it must **inspect three signals first** (*1. Workspace code files*, *2. `specs/discovery/` or legacy manuals/prompt verbs*, *3. Existing `specs/baseline/`*) and **confirm Greenfield vs. Brownfield with the user in the very first `ask_question` call**:
+- **Empty Repo $\neq$ Automatically Greenfield:** If the Git repo has zero code, confirm whether the team is actually replacing/strangling an **external legacy system or database** living in another repo/directory (if yes, treat as **Brownfield**: request read access/SQL dumps for `specs/baseline/` or consolidate legacy SOPs/drawings via [`requirements-discovery`](../../requirements_discovery/SKILL.md)).
+- **Existing Code $\neq$ Automatically Production Baseline:** If the repo contains PoC/hackathon or starter boilerplate code, confirm via `ask_question` whether to **preserve it as a Brownfield baseline** (`specs/baseline/` + characterization tests) or **discard/replace it cleanly as Greenfield**.
+- Once **Brownfield** is confirmed, classify the system into **Track A (Legacy Enterprise / 3-Tier / .NET Framework)**, **Track B (Modern Cloud-Native Lacking Docs & Tests)**, or a **Hybrid** of both, and produce a Baseline SDD in `specs/baseline/` using [`baseline-template.md`](../examples/specs/templates/baseline-template.md).
 
 > [!IMPORTANT]
 > **Brownfield Synergy with Optional [`requirements-discovery`](../../requirements_discovery/SKILL.md) (`specs/discovery/` $\leftrightarrow$ `specs/baseline/`):**

@@ -73,8 +73,8 @@ Across **every phase** of the AI-SDLC (Inception, Execution, and Operation):
 
 **Code is a downstream artifact derived from specification documents.** No feature implementation, architectural change, refactoring, or API modification may begin without an approved Specification Document under `specs/`.
 
-### 2.1 Two-Track Brownfield Development Protocol (Mandatory Baseline & Safety Net First)
-When working on an existing (brownfield) codebase or modernizing any legacy subsystem (see [`brownfield_assessment_playbook.md`](../skills/ai_sdlc/references/brownfield_assessment_playbook.md)):
+### 2.1 Greenfield vs. Brownfield Triage & Two-Track Brownfield Protocol (Mandatory Baseline & Safety Net First)
+In **Phase 1 (Step 1.1)**, always **inspect 3 signals first** (*workspace files*, *`specs/discovery/` or legacy manuals/prompt verbs*, and *`specs/baseline/`*) and **confirm Greenfield vs. Brownfield in the very first `ask_question` call** — never blindly ask before scanning, never silently assume an empty repo is Greenfield (it may be replacing an external legacy system/DB), and never silently assume prototype/boilerplate files are permanent baselines. When **Brownfield** is confirmed (see [`brownfield_assessment_playbook.md`](../skills/ai_sdlc/references/brownfield_assessment_playbook.md)):
 1. **Classify & Reverse-Engineer Baseline First (`specs/baseline/`):**
    - Author `specs/baseline/system-overview.md` or `specs/baseline/<subsystem>-baseline.md` using `specs/templates/baseline-template.md` (scaffolded from [`_agents/skills/ai_sdlc/examples/specs/templates/baseline-template.md`](../skills/ai_sdlc/examples/specs/templates/baseline-template.md)).
    - **Track A — Legacy Enterprise / 3-Tier Apps (`.NET Framework`, ASP.NET WebForms/MVC, WCF/SOAP, SQL Server):** Map the Presentation, Business, and Data tiers; extract **hidden business logic** embedded in SQL Stored Procedures (`sp_*`/`usp_*`), Triggers, UI code-behind (`.aspx.cs`), stateful `Session`/`ViewState`, and `Web.config`/`App.config` settings.

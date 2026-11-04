@@ -148,7 +148,7 @@ Every task is orchestrated by [`_agents/skills/ai_sdlc/SKILL.md`](./_agents/skil
 | PHASE 1: INCEPTION (Intent Framing, WAF 6-Pillar & SAIF 2.0 Architecture)       |
 |  - Scaffold specs/ & docs/ in root (validate_sdlc_gate.py --init)               |
 |  - Ingest Discovery Doc + repo context; resolve gaps/blockers via ask_question  |
-|  - Assess brownfield vs. greenfield scope (specs/baseline/ vs. Manual Drift)    |
+|  - 3-Signal Scan -> Confirm Greenfield vs. Brownfield in first ask_question     |
 |  - Frame Runtime mode (Regular App vs. Dual-Runtime AI Agent) & Zero-Trust IAM  |
 |  - Orchestrate: gcp-well-architected-saif, architecture-diagram, cost-estimator |
 +---------------------------------------------------------------------------------+
