@@ -12,11 +12,11 @@ Every single variable that influences the Bill of Materials (BoM) calculation mu
 
 The agent must cross-reference every discovered architecture component against this questionnaire and ask the user for all missing values:
 
-### 1.1 General, Multi-Environment (`NONPROD` vs `PROD`) & Brownfield Fundamentals
-- [ ] **Deployment Region**: In which Google Cloud region(s) (`GCP_REGION` / `GENAI_LOCATION`) will this workload run? (e.g., `us-central1`, `europe-west1`, `asia-southeast1`).
+### 1.1 General, Multi-Environment (`NONPROD` vs `PROD`), Sustainability & Brownfield Fundamentals
+- [ ] **Deployment Region & Sustainability (`CFE %` — WAF Pillar 6)**: In which Google Cloud region(s) (`GCP_REGION` / `GENAI_LOCATION`) will this workload run (e.g., `us-central1`, `europe-west1`, `asia-southeast1`), and what are your data residency vs. Carbon-Free Energy (`CFE %`) requirements?
 - [ ] **Multi-Environment Scope (`NONPROD_*` vs `PROD_*`)**: Should we model both Non-Prod (`main`/`develop` branch) and Production (`prod` branch) environments per the unified `.env` configuration?
 - [ ] **Operational Schedule**: Will resources run 24/7 continuously in Prod (730 hours/month with `PROD_MIN_INSTANCES>=1`) while scaling to zero (`NONPROD_MIN_INSTANCES=0`) or running business hours (~220 hours/month) in Non-Prod?
-- [ ] **High Availability / Disaster Recovery**: What are the multi-zone or multi-region redundancy requirements?
+- [ ] **High Availability / Disaster Recovery**: What are the multi-zone or multi-region redundancy, RTO, and RPO requirements?
 - [ ] **Brownfield TCO Comparison (if applicable)**: Are we comparing against an existing "As-Is" legacy system (e.g., Windows Server / `.NET Framework` VMs, SQL Server licenses) to calculate modernization ROI?
 
 ---
@@ -33,7 +33,7 @@ The agent must cross-reference every discovered architecture component against t
 ---
 
 ### 1.3 Databases & Caching (Cloud SQL, Cloud Spanner, Firestore, Memorystore)
-- [ ] **Database Engine & Version**: PostgreSQL, MySQL, SQL Server, or Cloud Spanner?
+- [ ] **Database Engine & Version**: PostgreSQL, MySQL, SQL Server, AlloyDB, or Cloud Spanner?
 - [ ] **Instance Sizing**: How many dedicated vCPUs and GB of RAM are required for Non-Prod vs Prod database instances?
 - [ ] **High Availability (HA)**: Is Regional High Availability (standby failover instance in a second zone) required for production?
 - [ ] **Read Replicas**: How many read replicas are needed to handle query load?
@@ -66,27 +66,27 @@ The agent must cross-reference every discovered architecture component against t
 
 ---
 
-### 1.6 Generative AI, Google ADK (`agent_runtime`), Model Armor & Live Evaluation
-- [ ] **Target Foundation Model**: Which exact model(s) will be deployed for the ADK `OrchestratorAgent` and domain subagents? (e.g., Gemini 2.5 Pro, Gemini 2.5 Flash, Gemini 3.7 Flash, Gemini 3.1 Pro).
+### 1.6 Generative AI, Google ADK (`agent_runtime`), SAIF 2.0 Guardrails & Live Evaluation
+- [ ] **Target Pinned Foundation Model(s)**: Which pinned model(s) will be deployed for the ADK `OrchestratorAgent` and domain subagents (e.g., `gemini-2.5-flash-001` for routing/extraction vs. `gemini-2.5-pro-001` for complex multi-hop reasoning), and will **Provisioned Throughput (GSUs) + PayGo spillover** be used?
 - [ ] **Inference Turn Volume**: How many user conversation turns are expected per day or month?
 - [ ] **Agentic Multi-Hop Multiplier**: On average, how many LLM reasoning calls + `FunctionTool` invocations occur per user turn (e.g., 1 Orchestrator intent classification + 1–2 Subagent/Tool hops)?
 - [ ] **Input Prompt Length**: What is the average input context length per hop (in tokens), including system prompts, `FunctionTool` declarations, chat history, and retrieved tool outputs?
 - [ ] **Output Generation Length**: What is the average generated output length per hop (in tokens)?
-- [ ] **Model Armor Guardrails**: Are input prompts (`before_agent_callback`) and/or model responses screened by Google Cloud Model Armor?
-- [ ] **Continuous Live Evaluation (`agents-cli eval`)**: How many golden test cases are in `evals/datasets/*.jsonl`, and how many `agents-cli eval run` executions occur per month across Non-Prod and Prod gates?
-- [ ] **Multimodal Modalities & Context Caching**: Are image, audio, or video inputs processed? Will Gemini context caching be enabled?
-- [ ] **Vector Search (Matching Engine)**: What index dimension (e.g., 768 or 1536) and how many deployed endpoint replicas are needed?
+- [ ] **SAIF 2.0 4-Point Guardrails (Model Armor + Cloud DLP)**: What volume of tokens/bytes passes through **Google Cloud Model Armor** (`before_agent`, `before_model`, `after_tool`, `after_model`) and **Sensitive Data Protection (Cloud DLP)** bidirectional tokenization/scrubbing?
+- [ ] **Continuous DLP-Safe Live Evaluation (`agents-cli eval`)**: How many golden test cases are in `evals/`, and how many `agents-cli eval run` executions (or Vertex AI Batch API offline evals) occur per month across Non-Prod and Prod gates?
+- [ ] **Multimodal Modalities & Context Caching**: Are image, audio, or video inputs processed? Will **Vertex AI Context Caching** be enabled for repeated system instructions and tool schemas?
+- [ ] **Vector Search / Vertex AI Search**: What index dimension (e.g., 768) and how many deployed endpoint replicas or search queries/GB indexed are needed?
 
 ---
 
-### 1.7 Networking, IAM Ingress Pattern (Rule 10) & DevSecOps Toolchain
-- [ ] **Compliant IAM & Ingress Pattern (Rule 10 — Zero `allUsers`)**:
-  - **Pattern 1**: Identity-Aware Proxy (IAP) behind External HTTPS Application Load Balancer + Serverless NEG (How many forwarding rules and GB processed?)
-  - **Pattern 2**: App-Level Google OAuth 2.0 with `invoker-iam-disabled="true"` (Zero ALB forwarding rule base fee)
-  - **Pattern 3**: Direct Unauthenticated Ingress with `invoker-iam-disabled="true"` on frontend + private backend (Zero ALB forwarding rule base fee)
-- [ ] **Internet Egress**: How many GB or TB of outbound data transfer to the public internet are expected per month, and on which Network Service Tier (Premium vs Standard)?
-- [ ] **Cloud NAT & Cloud Armor**: How many Cloud NAT gateways, Cloud Armor security policies, and WAF rules will be evaluated?
-- [ ] **DevSecOps CI/CD & Observability**: How many monthly Google Cloud Build minutes, container images stored/scanned in Artifact Registry (Artifact Analysis), active secret versions in Secret Manager, and GB of Cloud Logging/Monitoring telemetry?
+### 1.7 Networking, WAF Zero-Trust Ingress Pattern (Rule 10), Crypto & DevSecOps Toolchain
+- [ ] **WAF Zero-Trust IAM & Ingress Pattern (Rule 10 — Zero `allUsers`)**:
+  - **Pattern 1 (Default Recommended)**: Identity-Aware Proxy (IAP) behind Global External HTTPS Application Load Balancer + **Cloud Armor** WAF/DDoS + Serverless NEG (How many forwarding rules, Cloud Armor policies/requests, and GB processed?)
+  - **Pattern 2**: App-Level OAuth 2.0 / OIDC behind External ALB + **Cloud Armor** (or direct ingress where approved) with `invoker-iam-disabled="true"`
+  - **Pattern 3**: Direct Unauthenticated Ingress (`invoker-iam-disabled="true"`) — *strictly restricted to approved anonymous public non-sensitive static/marketing pages (prohibited for internal or AI workloads)*
+- [ ] **Internet Egress & Perimeter**: How many GB or TB of outbound data transfer to the public internet (Premium vs Standard Tier) and Private Service Connect (PSC) endpoints inside **VPC-SC** are expected per month?
+- [ ] **Cloud NAT, Cloud Armor & Cloud KMS (`CMEK`)**: How many Cloud NAT gateways, Cloud Armor security policies/rules, active **Cloud KMS (`CMEK` / HSM / EKM)** key versions, and monthly cryptographic operations?
+- [ ] **DevSecOps CI/CD & Observability**: How many monthly Google Cloud Build minutes, container images stored/scanned in Artifact Registry (Artifact Analysis + Binary Authorization), active secret versions in Secret Manager, and GB of Cloud Logging/Monitoring/Trace telemetry?
 
 ---
 

@@ -8,20 +8,22 @@ Use the following markdown structure when generating the cost estimation report 
 # 💰 Google Cloud Cost Estimation: [Workload / Project Name]
 
 **Date:** [YYYY-MM-DD]  
-**Target Region:** [e.g., us-central1 / europe-west1 / asia-southeast1]  
+**Target Region & Sustainability (WAF Pillar 6):** [e.g., us-central1 / europe-west1 — Documented Region CFE % & Low-CO2 justification]  
 **Architecture Source:** [e.g., docs/*-architecture.md / specs/features/SPEC-*.md / terraform/]  
 **Environments Modeled:** `NONPROD` (`main`/`develop`) & `PROD` (`prod`)  
 **Workload Profile:** [e.g., Confirmed with user: ~100k MAU, ~10 RPS peak in Prod (24/7), scale-to-zero in Non-Prod]
 
 ---
 
-## 📊 Executive Summary
+## 📊 Executive Summary & FinOps Unit Economics (WAF Pillar 4)
 
 | Pricing Model | Non-Prod Monthly (USD) | Prod Monthly (USD) | Total Monthly Run-Rate (USD) | Total Annual Run-Rate (USD) | Projected Savings |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **On-Demand (Pay-As-You-Go)** | $[NonProd_Monthly] | $[Prod_Monthly] | **$[Total_Monthly_OnDemand]** | **$[Total_Annual_OnDemand]** | Baseline |
-| **1-Year Committed Use (CUD)** | $[NonProd_1Yr] | $[Prod_1Yr] | $[Monthly_1Yr_CUD] | $[Annual_1Yr_CUD] | ~28% on steady compute/DB |
-| **3-Year Committed Use (CUD)** | $[NonProd_3Yr] | $[Prod_3Yr] | $[Monthly_3Yr_CUD] | $[Annual_3Yr_CUD] | ~52% on steady compute/DB |
+| **1-Year CUD + Provisioned Throughput** | $[NonProd_1Yr] | $[Prod_1Yr] | $[Monthly_1Yr_CUD] | $[Annual_1Yr_CUD] | ~28% on steady compute/DB/GSUs |
+| **3-Year CUD + Context Caching** | $[NonProd_3Yr] | $[Prod_3Yr] | $[Monthly_3Yr_CUD] | $[Annual_3Yr_CUD] | ~52% on steady compute/DB |
+
+- **FinOps Unit Economics KPIs:** **`$[Unit_Cost_Per_1k_Reqs]` per 1,000 API requests** • **`$[Unit_Cost_Per_Session]` per resolved AI agent session**
 
 > [!NOTE]
 > All unit prices are sourced live directly from the **Google Cloud Billing API** or official live Google Cloud pricing documentation in `[Target Region]`. Zero local price caching or benchmark defaults were used. Free tier allowances have been credited where applicable.

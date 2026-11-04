@@ -7,6 +7,13 @@ description: "Creates professional, dark-themed technical architecture/cloud/inf
 
 Generate professional, dark-themed technical architecture diagrams and documentation as markdown (`.md`) files in the `docs/` folder inside the project folder, with accompanying standalone HTML/inline SVG graphics. No external tools, no API keys, no rendering libraries — just write the files and review in markdown viewers or browsers.
 
+## AI-SDLC Master Hub & Governance Rules Wiring
+- **Master Orchestrator Hub:** Wired into the **[`ai-sdlc` master skill (`../ai_sdlc/SKILL.md`)](../ai_sdlc/SKILL.md)** during **Phase 1: Inception (Step 1.4)** for both Greenfield Target Dual-Runtime topologies and Brownfield *"As-Is vs. Target"* modernization diagrams (`docs/<project>-architecture.{md,html}`), and remains invocable **standalone** at any time.
+- **Architectural & Security Governance Alignment:** Every generated topology enforces **[`gcp-well-architected-saif`](../gcp_well_architected_saif/SKILL.md)** alongside the 3 consolidated governance rules:
+  - [`ai_sdlc_and_sdd_standards.md`](../../rules/ai_sdlc_and_sdd_standards.md) (*Dual-Runtime boundary, SDD linkage & Rule 13 WAF Graceful Degradation*)
+  - [`google_adk_and_agent_runtime.md`](../../rules/google_adk_and_agent_runtime.md) (*Rules 11–12: `agent_runtime` ADK hierarchy, 4-point Model Armor/Cloud DLP hooks, `User Auth` & Externalized HITL*)
+  - [`devops_security_and_quality_standards.md`](../../rules/devops_security_and_quality_standards.md) (*Rules 1–10: `cloud_run` `/healthz`, Global ALB + Cloud Armor + IAP/OAuth2 Zero-Trust Ingress, VPC-SC & CMEK*)
+
 ## Scope
 
 **Best suited for:** - Software system architecture (frontend / backend /
@@ -31,13 +38,15 @@ Based on
 
 ## Workflow
 
-1. **Architecture & Spec Discovery:**
+1. **Architecture, WAF & SAIF Spec Discovery:**
    - Inspect existing `specs/baseline/*.md`, `specs/features/SPEC-*.md`, `terraform/*.tf`, `app/`, `src/`, and `server/` to extract confirmed components, runtime boundaries, and data flows.
+   - Align all visual topologies with **[`gcp-well-architected-saif`](../gcp_well_architected_saif/SKILL.md)** (Google Cloud Well-Architected Framework 6 Pillars & Google Secure AI Framework SAIF 2.0).
 2. **Mandatory Clarification of Unknowns (`ask_question`):**
    - If any architectural boundary or topology detail is unknown or ambiguous, **pause and ask the user via `ask_question`** before generating the diagram:
      - **Diagram Mode:** Are we generating a **Target Dual-Runtime Architecture** (Greenfield) or a **Brownfield "As-Is vs. Target Modernization" Comparison** (e.g., Legacy 3-Tier/.NET $\rightarrow$ Cloud Run + Agent Runtime)?
-     - **IAM & Ingress Edge Pattern:** Pattern 1 (External HTTPS Load Balancer + Serverless NEG + IAP), Pattern 2 (Direct Ingress + App-Level Google OAuth 2.0), or Pattern 3 (Direct Public Frontend `invoker-iam-disabled: true` + Private Backend)?
-     - **Data & Integration Tiers:** Which specific databases (Cloud SQL, Spanner, Firestore, Vector Search, or legacy SQL Server) and external APIs should be depicted?
+     - **WAF Zero-Trust IAM & Ingress Edge Pattern:** Pattern 1 (External HTTPS Load Balancer + Cloud Armor WAF + Serverless NEG + IAP — **Default Recommended** for internal enterprise & AI workloads), Pattern 2 (Cloud Armor + Direct Ingress + App-Level OAuth 2.0/OIDC), or Pattern 3 (Direct Public Frontend `invoker-iam-disabled: true` — strictly restricted to anonymous public non-sensitive static/marketing pages)?
+     - **Perimeter, Encryption & Resilience (WAF Pillars 2 & 3):** Should the diagram depict a **VPC Service Controls (`VPC-SC`)** perimeter, **Private Service Connect (PSC)** endpoints, **Cloud KMS (`CMEK` / HSM / EKM)** encryption, and multi-zone/multi-region HA failover?
+     - **Data & Integration Tiers:** Which specific databases (Cloud SQL, Spanner, Firestore, BigQuery, Vertex AI Search / Vector Search, or legacy SQL Server) and external APIs should be depicted?
 3. **Generate Markdown & Companion Interactive HTML:**
    - Save the primary markdown architecture document with `write_to_file` to `docs/<project-name>-architecture.md` (ensuring `docs/` exists via `validate_sdlc_gate.py --init` if needed).
    - Save the standalone interactive HTML/SVG diagram to `docs/<project-name>-architecture.html` and link it from the markdown document.
@@ -65,18 +74,18 @@ xdg-open ./docs/my-architecture.html
 
 ## Design System & Visual Language
 
-### Color Palette (Semantic Mapping for Dual-Runtime & Cloud Architecture)
+### Color Palette (Semantic Mapping for Dual-Runtime, WAF & SAIF Architecture)
 
 Use specific `rgba` fills and hex strokes to categorize components:
 
 | Component Type | Fill (`rgba`) | Stroke (`Hex`) | Typical Repository Workloads |
 | :--- | :--- | :--- | :--- |
 | **Frontend / Client (`cloud_run`)** | `rgba(8, 51, 68, 0.4)` | `#22d3ee` (cyan-400) | React/Vite UI, Browser Client, OAuth Sign-In |
-| **API Proxy / Gateway (`cloud_run`)** | `rgba(6, 78, 59, 0.4)` | `#34d399` (emerald-400) | FastAPI/Express Streaming Proxy, `/healthz` Liveness Probe |
-| **AI Agents & ADK (`agent_runtime`)** | `rgba(120, 53, 15, 0.35)` | `#fbbf24` (amber-400) | Gemini Enterprise Agent Platform, ADK `OrchestratorAgent`, Domain Subagents, `FunctionTool` Registry |
-| **Database & Vector Store** | `rgba(76, 29, 149, 0.4)` | `#a78bfa` (violet-400) | Cloud SQL, Spanner, Firestore, Vertex AI Vector Search, Legacy SQL Server |
-| **Security & Guardrails** | `rgba(136, 19, 55, 0.4)` | `#fb7185` (rose-400) | Identity-Aware Proxy (IAP), Model Armor (`before_agent_callback`), Secret Manager, CodeMender SAST |
-| **Event Bus & CI/CD** | `rgba(251, 146, 60, 0.3)` | `#fb923c` (orange-400) | Pub/Sub, Cloud Build, Artifact Registry, Infrastructure Manager (Terraform) |
+| **API Proxy / Gateway (`cloud_run`)** | `rgba(6, 78, 59, 0.4)` | `#34d399` (emerald-400) | FastAPI/Express Streaming Proxy, `/healthz` Liveness Probe, Circuit Breaker |
+| **AI Agents & ADK (`agent_runtime`)** | `rgba(120, 53, 15, 0.35)` | `#fbbf24` (amber-400) | Gemini Enterprise Agent Platform, ADK `OrchestratorAgent`, Read-Only vs Bounded Action Subagents, `FunctionTool` Registry |
+| **Database & Vector Store** | `rgba(76, 29, 149, 0.4)` | `#a78bfa` (violet-400) | Cloud SQL (HA), Spanner, Firestore, BigQuery, Vertex AI Search / Vector Search, Legacy SQL Server |
+| **Security, SAIF 2.0 & WAF Guardrails** | `rgba(136, 19, 55, 0.4)` | `#fb7185` (rose-400) | Cloud Armor WAF, IAP, 4-Point Model Armor + Cloud DLP Callbacks (`before_agent`, `before_model`, `after_tool`, `after_model`), Externalized HITL Gate, VPC-SC, Cloud KMS (`CMEK`), Secret Manager, CodeMender SAST |
+| **Event Bus & CI/CD** | `rgba(251, 146, 60, 0.3)` | `#fb923c` (orange-400) | Pub/Sub, Cloud Build (SLSA L3), Artifact Registry + Binary Authorization, Infrastructure Manager (Terraform) |
 | **Legacy / External Tier** | `rgba(30, 41, 59, 0.5)` | `#94a3b8` (slate-400) | Legacy .NET Framework / IIS / WCF Services, Third-Party APIs |
 
 ### Typography & Background
@@ -102,15 +111,16 @@ arrows from showing through semi-transparent fills, use a **double-rect masking
 technique**: 1. Draw an opaque background rect (`#0f172a`) 2. Draw the
 semi-transparent styled rect on top
 
-### Dual-Runtime & Brownfield Boundary Rules
+### Dual-Runtime, WAF Perimeter & SAIF 2.0 Boundary Rules
 
 -   **Z-Order:** Draw arrows *early* in the SVG (after the grid) so they render
     behind component boxes
 -   **Arrowheads:** Defined via SVG markers
--   **Security & Guardrail Flows:** Use dashed lines in rose color (`#fb7185`) for IAP auth verification and Model Armor `before_agent_callback` interception
--   **Mandatory Runtime Boundary Containers:**
+-   **Security & Guardrail Flows:** Use dashed lines in rose color (`#fb7185`) for IAP + Cloud Armor auth verification, `User Auth` OAuth 2.0 token propagation, 4-point Model Armor + Cloud DLP interception (`before_agent`, `before_model`, `after_tool`, `after_model`), and externalized HITL approval gates.
+-   **Mandatory Runtime & Security Boundary Containers:**
+    -   **VPC Service Controls (`VPC-SC`) & CMEK Security Perimeter (when applicable):** Outer dashed (`10,5`) rose/slate border enclosing protected Google Cloud resources (`agent_runtime`, `cloud_run` backend, databases, and vector stores).
     -   **Google Cloud Run Boundary (`cloud_run`):** Dashed (`6,4`) cyan/emerald border enclosing Frontend UI, Streaming API Proxy, and `/healthz` probe.
-    -   **Gemini Enterprise Agent Platform Boundary (`agent_runtime`):** Dashed (`8,4`) amber border (`#fbbf24`, `rx="12"`) enclosing the ADK `OrchestratorAgent`, Domain Subagents, `before_agent_callback` Model Armor hook, `FunctionTool` registry, and `agentengine://` session store.
+    -   **Gemini Enterprise Agent Platform Boundary (`agent_runtime`):** Dashed (`8,4`) amber border (`#fbbf24`, `rx="12"`) enclosing the ADK `OrchestratorAgent`, Read-Only Retrieval Subagents vs. Bounded Action Subagents, 4-point Model Armor/DLP hooks, `FunctionTool` registry, externalized HITL gate, and `agentengine://` session store.
     -   **Brownfield "As-Is vs. Target" Split Mode:** When documenting a brownfield modernization (e.g., Legacy 3-Tier `.NET Framework` / WCF / SQL Stored Procedures $\rightarrow$ Dual-Runtime), render a top or left **"As-Is Legacy Tier"** boundary box (`#94a3b8` slate dashed border) alongside the **"Target Dual-Runtime Architecture"**, connected by Strangler Fig / API Facade or Data Migration arrows.
 
 ### Spacing & Layout Logic
