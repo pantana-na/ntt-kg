@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NTT Plant Knowledge Graph & Catalog Demo Architecture</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #020617;
+      color: #fff;
+      font-family: 'JetBrains Mono', monospace;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    .container {
+      margin: 0 auto;
+      max-width: 1240px;
+    }
+
+    .header {
+      margin-bottom: 2rem;
+    }
+
+    .header-row {
+      align-items: center;
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .pulse-dot {
+      animation: pulse 2s infinite;
+      background: #22d3ee;
+      border-radius: 50%;
+      height: 12px;
+      width: 12px;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.45; }
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+
+    .subtitle {
+      color: #94a3b8;
+      font-size: 0.875rem;
+      margin-left: 1.75rem;
+    }
+
+    .diagram-container {
+      background: rgba(15, 23, 42, 0.55);
+      border: 1px solid #1e293b;
+      border-radius: 1rem;
+      overflow-x: auto;
+      padding: 1.5rem;
+    }
+
+    svg {
+      display: block;
+      min-width: 1060px;
+      width: 100%;
+    }
+
+    .cards {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      margin-top: 2rem;
+    }
+
+    .card {
+      background: rgba(15, 23, 42, 0.55);
+      border: 1px solid #1e293b;
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+    }
+
+    .card-header {
+      align-items: center;
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .card-dot {
+      border-radius: 50%;
+      height: 8px;
+      width: 8px;
+    }
+
+    .card-dot.cyan { background: #22d3ee; }
+    .card-dot.emerald { background: #34d399; }
+    .card-dot.violet { background: #a78bfa; }
+    .card-dot.amber { background: #fbbf24; }
+    .card-dot.rose { background: #fb7185; }
+
+    .card h3 {
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+
+    .card ul {
+      color: #94a3b8;
+      font-size: 0.75rem;
+      list-style: none;
+    }
+
+    .card li {
+      line-height: 1.5;
+      margin-bottom: 0.375rem;
+    }
+
+    .footer {
+      color: #475569;
+      font-size: 0.75rem;
+      margin-top: 1.5rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-row">
+        <div class="pulse-dot"></div>
+        <h1>NTT Plant Knowledge Graph &amp; Knowledge Catalog Demo Architecture</h1>
+      </div>
+      <p class="subtitle">Project: your-gcp-project-id &bull; Region: asia-southeast1 &bull; Spanner Hybrid Search (Vector + FTS + RRF + Graph GQL) &amp; Dataplex Natural Language Search</p>
+    </div>
+
+    <div class="diagram-container">
+      <svg viewBox="0 0 1120 820">
+        <defs>
+          <marker id="arrow-cyan" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#22d3ee" />
+          </marker>
+          <marker id="arrow-emerald" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#34d399" />
+          </marker>
+          <marker id="arrow-violet" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#a78bfa" />
+          </marker>
+          <marker id="arrow-amber" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#fbbf24" />
+          </marker>
+          <marker id="arrow-rose" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#fb7185" />
+          </marker>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+
+        <!-- Background Grid -->
+        <rect width="100%" height="100%" fill="url(#grid)" />
+
+        <!-- =========================================================
+             ARROWS (Drawn Early for Clean Z-Order Behind Components)
+             ========================================================= -->
+
+        <!-- okf_bundle -> Ingestion Pipeline -->
+        <line x1="210" y1="165" x2="210" y2="238" stroke="#fb923c" stroke-width="1.5" marker-end="url(#arrow-emerald)"/>
+        <text x="220" y="205" fill="#94a3b8" font-size="8">Parse YAML + MD</text>
+
+        <!-- Ingestion Pipeline -> GCS -->
+        <path d="M 330 280 L 428 145" fill="none" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-emerald)"/>
+        <text x="360" y="195" fill="#34d399" font-size="8">gsutil / SDK sync</text>
+
+        <!-- Ingestion Pipeline -> Spanner -->
+        <line x1="330" y1="305" x2="428" y2="305" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrow-violet)"/>
+        <text x="378" y="296" fill="#a78bfa" font-size="8">DDL + DML Load</text>
+
+        <!-- Ingestion Pipeline -> Dataplex -->
+        <path d="M 330 335 L 428 565" fill="none" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrow-amber)"/>
+        <text x="348" y="472" fill="#fbbf24" font-size="8">Entries + Aspects</text>
+
+        <!-- Spanner <-> Vertex AI Embedding Model -->
+        <line x1="770" y1="295" x2="868" y2="295" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrow-amber)"/>
+        <line x1="870" y1="315" x2="772" y2="315" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrow-amber)"/>
+        <text x="820" y="286" fill="#fbbf24" font-size="8" text-anchor="middle">ML.PREDICT</text>
+        <text x="820" y="330" fill="#94a3b8" font-size="7" text-anchor="middle">768-dim FLOAT32</text>
+
+        <!-- GCS -> Dataplex Auto Discovery -->
+        <path d="M 550 180 L 550 518" fill="none" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4,4" marker-end="url(#arrow-amber)"/>
+        <text x="556" y="485" fill="#94a3b8" font-size="7">GCS URI Link</text>
+
+        <!-- Spanner -> Dataplex System Catalog -->
+        <line x1="640" y1="450" x2="640" y2="518" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="4,4" marker-end="url(#arrow-amber)"/>
+        <text x="695" y="488" fill="#a78bfa" font-size="8" text-anchor="middle">Auto-Catalog Metadata</text>
+
+        <!-- Presenter -> GCP Console -->
+        <line x1="210" y1="535" x2="210" y2="465" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arrow-rose)"/>
+        <text x="220" y="503" fill="#fb7185" font-size="8">Google Cloud IAM</text>
+
+        <!-- GCP Console Spanner Studio -> Spanner -->
+        <path d="M 330 570 L 428 380" fill="none" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrow-cyan)"/>
+        <text x="352" y="440" fill="#22d3ee" font-size="8">SQL RRF + GQL</text>
+
+        <!-- GCP Console Knowledge Catalog -> Dataplex -->
+        <line x1="330" y1="615" x2="428" y2="615" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrow-cyan)"/>
+        <text x="379" y="606" fill="#22d3ee" font-size="8" text-anchor="middle">NL Search</text>
+
+        <!-- =========================================================
+             BOUNDARY CONTAINERS
+             ========================================================= -->
+
+        <!-- Left Column: Local Repo & Demo Presenter Boundary -->
+        <rect x="30" y="40" width="330" height="650" rx="12" fill="rgba(15, 23, 42, 0.3)" stroke="#94a3b8" stroke-width="1" stroke-dasharray="8,4"/>
+        <text x="46" y="62" fill="#94a3b8" font-size="10" font-weight="600">GitHub Repo (ntt-kg) &amp; Demo Operator</text>
+
+        <!-- Right Container: GCP Project Boundary -->
+        <rect x="390" y="40" width="700" height="650" rx="12" fill="rgba(251, 113, 133, 0.03)" stroke="#fb7185" stroke-width="1.2" stroke-dasharray="10,5"/>
+        <text x="408" y="62" fill="#fb7185" font-size="10" font-weight="600">GCP Project: your-gcp-project-id (IAM Authenticated Console)</text>
+
+        <!-- Regional Boundary: asia-southeast1 -->
+        <rect x="410" y="80" width="660" height="395" rx="10" fill="rgba(167, 139, 250, 0.04)" stroke="#a78bfa" stroke-width="1" stroke-dasharray="6,4"/>
+        <text x="426" y="100" fill="#a78bfa" font-size="9" font-weight="600">Region: asia-southeast1 (Singapore) &bull; Co-Located Storage, Spanner &amp; Vertex AI</text>
+
+        <!-- Global Metadata Boundary: Dataplex Knowledge Catalog -->
+        <rect x="410" y="495" width="660" height="175" rx="10" fill="rgba(251, 191, 36, 0.04)" stroke="#fbbf24" stroke-width="1" stroke-dasharray="6,4"/>
+        <text x="426" y="513" fill="#fbbf24" font-size="9" font-weight="600">Global Control Plane: Dataplex Universal Catalog (Knowledge Catalog)</text>
+
+        <!-- =========================================================
+             LEFT COLUMN COMPONENTS
+             ========================================================= -->
+
+        <!-- 1. okf_bundle -->
+        <rect x="60" y="85" width="270" height="80" rx="6" fill="#0f172a" />
+        <rect x="60" y="85" width="270" height="80" rx="6" fill="rgba(30, 41, 59, 0.6)" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="195" y="108" fill="white" font-size="12" font-weight="600" text-anchor="middle">okf_bundle/ (OKF v0.2)</text>
+        <text x="195" y="125" fill="#94a3b8" font-size="9" text-anchor="middle">109 Markdown Files &bull; 100 Entities</text>
+        <text x="195" y="140" fill="#94a3b8" font-size="8" text-anchor="middle">61 Equipment &bull; 24 Instruments &bull; 4 Units</text>
+        <text x="195" y="153" fill="#fbbf24" font-size="8" text-anchor="middle">288 P&amp;ID Streams &bull; HAZOP / RAM / Conflicts</text>
+
+        <!-- 2. Ingestion & Provisioning Scripts -->
+        <rect x="60" y="240" width="270" height="130" rx="6" fill="#0f172a" />
+        <rect x="60" y="240" width="270" height="130" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="195" y="263" fill="white" font-size="12" font-weight="600" text-anchor="middle">Automation Pipeline (scripts/)</text>
+        <text x="195" y="282" fill="#34d399" font-size="9" text-anchor="middle">Unified .env + gcloud + Python SDK</text>
+        <text x="195" y="300" fill="#94a3b8" font-size="8" text-anchor="middle">• 01_provision_infra.sh (APIs, IAM, Spanner)</text>
+        <text x="195" y="315" fill="#94a3b8" font-size="8" text-anchor="middle">• 02_load_spanner.py (Nodes, Edges, Chunks)</text>
+        <text x="195" y="330" fill="#94a3b8" font-size="8" text-anchor="middle">• 03_embed_spanner.py (SQL ML.PREDICT)</text>
+        <text x="195" y="345" fill="#94a3b8" font-size="8" text-anchor="middle">• 04_load_dataplex.py (Entries, Aspects)</text>
+
+        <!-- 3. IAM Identity Guard -->
+        <rect x="60" y="405" width="270" height="60" rx="6" fill="#0f172a" />
+        <rect x="60" y="405" width="270" height="60" rx="6" fill="rgba(136, 19, 55, 0.4)" stroke="#fb7185" stroke-width="1.5"/>
+        <text x="195" y="428" fill="white" font-size="11" font-weight="600" text-anchor="middle">Google Cloud IAM &amp; Service Agent</text>
+        <text x="195" y="445" fill="#94a3b8" font-size="8" text-anchor="middle">Console User Auth + gcp-sa-spanner AI Role</text>
+
+        <!-- 4. Google Cloud Console (Live Demo UX) -->
+        <rect x="60" y="535" width="270" height="130" rx="6" fill="#0f172a" />
+        <rect x="60" y="535" width="270" height="130" rx="6" fill="rgba(8, 51, 68, 0.45)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="195" y="558" fill="white" font-size="12" font-weight="600" text-anchor="middle">Google Cloud Console (No UI)</text>
+        <text x="195" y="576" fill="#22d3ee" font-size="9" text-anchor="middle">Interactive Live Demo Surface</text>
+        <text x="195" y="595" fill="#94a3b8" font-size="8" text-anchor="middle">1. Spanner Studio: Hybrid RRF SQL</text>
+        <text x="195" y="611" fill="#94a3b8" font-size="8" text-anchor="middle">2. Spanner Graph: Visual GQL Topology</text>
+        <text x="195" y="627" fill="#94a3b8" font-size="8" text-anchor="middle">3. Knowledge Catalog: Natural Language</text>
+        <text x="195" y="643" fill="#94a3b8" font-size="8" text-anchor="middle">   &amp; Hybrid Aspect Search</text>
+
+        <!-- =========================================================
+             RIGHT CONTAINER: GCP SERVICES
+             ========================================================= -->
+
+        <!-- 5. Cloud Storage Raw OKF Bundle -->
+        <rect x="430" y="115" width="340" height="65" rx="6" fill="#0f172a" />
+        <rect x="430" y="115" width="340" height="65" rx="6" fill="rgba(251, 146, 60, 0.25)" stroke="#fb923c" stroke-width="1.5"/>
+        <text x="600" y="138" fill="white" font-size="12" font-weight="600" text-anchor="middle">Cloud Storage (OKF Lake Bucket)</text>
+        <text x="600" y="155" fill="#94a3b8" font-size="8" text-anchor="middle">gs://your-gcp-project-id-okf-bundle/okf_bundle/*</text>
+        <text x="600" y="169" fill="#fb923c" font-size="8" text-anchor="middle">Canonical Markdown Docs &amp; P&amp;ID Source Lineage</text>
+
+        <!-- 6. Cloud Spanner Multi-Model Engine -->
+        <rect x="430" y="200" width="340" height="250" rx="8" fill="#0f172a" />
+        <rect x="430" y="200" width="340" height="250" rx="8" fill="rgba(76, 29, 149, 0.42)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="600" y="224" fill="white" font-size="12" font-weight="700" text-anchor="middle">Cloud Spanner Enterprise (100 PU)</text>
+        <text x="600" y="241" fill="#a78bfa" font-size="9" text-anchor="middle">Instance: ntt-kg-demo &bull; DB: plant-kg</text>
+
+        <!-- Sub-blocks inside Spanner -->
+        <rect x="448" y="254" width="304" height="42" rx="4" fill="rgba(15, 23, 42, 0.75)" stroke="#a78bfa" stroke-width="0.8"/>
+        <text x="600" y="271" fill="white" font-size="9" font-weight="600" text-anchor="middle">1. Native Vector Search + CREATE MODEL</text>
+        <text x="600" y="286" fill="#94a3b8" font-size="8" text-anchor="middle">OkfEmbeddingModel &bull; ARRAY&lt;FLOAT32&gt;(768) &bull; COSINE_DISTANCE</text>
+
+        <rect x="448" y="304" width="304" height="42" rx="4" fill="rgba(15, 23, 42, 0.75)" stroke="#22d3ee" stroke-width="0.8"/>
+        <text x="600" y="321" fill="white" font-size="9" font-weight="600" text-anchor="middle">2. Full-Text Keyword Search (SEARCH Index)</text>
+        <text x="600" y="336" fill="#94a3b8" font-size="8" text-anchor="middle">TOKENLIST (Tag, Title, Body) &bull; SEARCH() &amp; SCORE()</text>
+
+        <rect x="448" y="354" width="304" height="38" rx="4" fill="rgba(15, 23, 42, 0.75)" stroke="#34d399" stroke-width="0.8"/>
+        <text x="600" y="370" fill="white" font-size="9" font-weight="600" text-anchor="middle">3. Hybrid Search via Reciprocal Rank Fusion (RRF)</text>
+        <text x="600" y="384" fill="#94a3b8" font-size="8" text-anchor="middle">1/(60 + fts_rank) + 1/(60 + vec_rank) Unified Ranking</text>
+
+        <rect x="448" y="400" width="304" height="38" rx="4" fill="rgba(15, 23, 42, 0.75)" stroke="#fbbf24" stroke-width="0.8"/>
+        <text x="600" y="416" fill="white" font-size="9" font-weight="600" text-anchor="middle">4. Spanner Graph (PlantKnowledgeGraph • ISO GQL)</text>
+        <text x="600" y="430" fill="#94a3b8" font-size="8" text-anchor="middle">OkfNodes &amp; OkfEdges (Streams, Interlocks, Conflicts)</text>
+
+        <!-- 7. Vertex AI Embeddings Endpoint -->
+        <rect x="870" y="245" width="180" height="115" rx="6" fill="#0f172a" />
+        <rect x="870" y="245" width="180" height="115" rx="6" fill="rgba(120, 53, 15, 0.4)" stroke="#fbbf24" stroke-width="1.5"/>
+        <text x="960" y="270" fill="white" font-size="11" font-weight="600" text-anchor="middle">Vertex AI Endpoint</text>
+        <text x="960" y="288" fill="#fbbf24" font-size="9" text-anchor="middle">text-embedding-005</text>
+        <text x="960" y="306" fill="#94a3b8" font-size="8" text-anchor="middle">Invoked Natively by</text>
+        <text x="960" y="320" fill="#94a3b8" font-size="8" text-anchor="middle">Spanner SQL Engine</text>
+        <text x="960" y="338" fill="#34d399" font-size="7" text-anchor="middle">asia-southeast1 publisher model</text>
+
+        <!-- 8. Dataplex Knowledge Catalog -->
+        <rect x="430" y="522" width="620" height="132" rx="8" fill="#0f172a" />
+        <rect x="430" y="522" width="620" height="132" rx="8" fill="rgba(120, 53, 15, 0.35)" stroke="#fbbf24" stroke-width="1.5"/>
+        <text x="740" y="545" fill="white" font-size="12" font-weight="700" text-anchor="middle">Dataplex Knowledge Catalog (Universal Catalog — Natural Language Search)</text>
+
+        <rect x="448" y="558" width="186" height="82" rx="4" fill="rgba(15, 23, 42, 0.75)" stroke="#fbbf24" stroke-width="0.8"/>
+        <text x="541" y="576" fill="#fbbf24" font-size="9" font-weight="600" text-anchor="middle">Custom Entry Group</text>
+        <text x="541" y="592" fill="#94a3b8" font-size="8" text-anchor="middle">• 61 Equipment Entries</text>
+        <text x="541" y="606" fill="#94a3b8" font-size="8" text-anchor="middle">• 24 Instrument Entries</text>
+        <text x="541" y="620" fill="#94a3b8" font-size="8" text-anchor="middle">• 15 Unit/HAZOP/Std Docs</text>
+
+        <rect x="647" y="558" width="186" height="82" rx="4" fill="rgba(15, 23, 42, 0.75)" stroke="#22d3ee" stroke-width="0.8"/>
+        <text x="740" y="576" fill="#22d3ee" font-size="9" font-weight="600" text-anchor="middle">Custom Aspect Types</text>
+        <text x="740" y="592" fill="#94a3b8" font-size="8" text-anchor="middle">• okf-plant-asset-aspect</text>
+        <text x="740" y="606" fill="#94a3b8" font-size="8" text-anchor="middle">• safety_class &amp; unit</text>
+        <text x="740" y="620" fill="#94a3b8" font-size="8" text-anchor="middle">• has_conflict &amp; drawing</text>
+
+        <rect x="846" y="558" width="186" height="82" rx="4" fill="rgba(15, 23, 42, 0.75)" stroke="#a78bfa" stroke-width="0.8"/>
+        <text x="939" y="576" fill="#a78bfa" font-size="9" font-weight="600" text-anchor="middle">Glossary &amp; Auto Entries</text>
+        <text x="939" y="592" fill="#94a3b8" font-size="8" text-anchor="middle">• Spanner System Tables</text>
+        <text x="939" y="606" fill="#94a3b8" font-size="8" text-anchor="middle">• Plant &amp; HAZOP Glossary</text>
+        <text x="939" y="620" fill="#94a3b8" font-size="8" text-anchor="middle">• Semantic NL Discovery</text>
+
+        <!-- =========================================================
+             LEGEND (Strictly Below Lowest Boundary Y=690 -> Y=720)
+             ========================================================= -->
+        <rect x="30" y="720" width="1060" height="72" rx="8" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+        <text x="52" y="742" fill="#94a3b8" font-size="9" font-weight="600">ARCHITECTURE LEGEND:</text>
+
+        <rect x="52" y="754" width="14" height="14" rx="3" fill="rgba(8, 51, 68, 0.45)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="74" y="765" fill="#cbd5e1" font-size="8">GCP Console Surface</text>
+
+        <rect x="215" y="754" width="14" height="14" rx="3" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="237" y="765" fill="#cbd5e1" font-size="8">CLI / Python Pipeline</text>
+
+        <rect x="385" y="754" width="14" height="14" rx="3" fill="rgba(76, 29, 149, 0.42)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="407" y="765" fill="#cbd5e1" font-size="8">Spanner Hybrid + Graph</text>
+
+        <rect x="565" y="754" width="14" height="14" rx="3" fill="rgba(120, 53, 15, 0.4)" stroke="#fbbf24" stroke-width="1.5"/>
+        <text x="587" y="765" fill="#cbd5e1" font-size="8">Vertex AI &amp; Dataplex Catalog</text>
+
+        <rect x="780" y="754" width="14" height="14" rx="3" fill="rgba(251, 146, 60, 0.25)" stroke="#fb923c" stroke-width="1.5"/>
+        <text x="802" y="765" fill="#cbd5e1" font-size="8">GCS Raw OKF Corpus</text>
+
+        <line x1="935" y1="761" x2="965" y2="761" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <text x="973" y="765" fill="#cbd5e1" font-size="8">IAM / Trust Flow</text>
+      </svg>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot violet"></div>
+          <h3>Spanner Multi-Model Hybrid Search</h3>
+        </div>
+        <ul>
+          <li>&bull; <strong>Native Embeddings:</strong> <code>CREATE MODEL OkfEmbeddingModel</code> calling Vertex AI <code>text-embedding-005</code> in <code>asia-southeast1</code> via SQL <code>ML.PREDICT</code></li>
+          <li>&bull; <strong>Keyword + Vector RRF:</strong> Combines <code>SEARCH()</code> exact tag/P&amp;ID matching with <code>COSINE_DISTANCE()</code> semantic similarity via Reciprocal Rank Fusion</li>
+          <li>&bull; <strong>Spanner Graph (GQL):</strong> Traverses 288 P&amp;ID streams, 210 instrument loops, safety interlocks, and drawing conflicts visually in Spanner Studio</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot amber"></div>
+          <h3>Dataplex Knowledge Catalog NL Search</h3>
+        </div>
+        <ul>
+          <li>&bull; <strong>100 Governed OKF Entries:</strong> Equipment, Instruments, Units, HAZOP Protocols, Procedures, Standards, and P&amp;ID Source Packages</li>
+          <li>&bull; <strong>Custom Aspect Types:</strong> Structured metadata facets (<code>unit</code>, <code>safety_class</code>, <code>equipment_class</code>, <code>has_conflict</code>, <code>pid_drawing</code>)</li>
+          <li>&bull; <strong>Natural Language + Facets:</strong> Query everyday engineering intent blended with structured aspect predicates in Google Cloud Console</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot emerald"></div>
+          <h3>Pragmatic Console-First PoC Design</h3>
+        </div>
+        <ul>
+          <li>&bull; <strong>Zero Custom UI Maintenance:</strong> 100% demonstrated inside Google Cloud Console (Spanner Studio + Knowledge Catalog Search)</li>
+          <li>&bull; <strong>Cost-Right-Sized:</strong> Spanner Enterprise at minimum <code>100 Processing Units</code> (0.1 node) in <code>asia-southeast1</code> + 1-command teardown</li>
+          <li>&bull; <strong>Unified Configuration:</strong> Single <code>.env</code> driving Bash provisioning and idempotent Python ingestion scripts</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer">
+      NTT Knowledge Graph &amp; Catalog Demo &bull; Project: your-gcp-project-id &bull; Region: asia-southeast1 &bull; Repo: github.com/pantana-na/ntt-kg
+    </div>
+  </div>
+</body>
+</html>
