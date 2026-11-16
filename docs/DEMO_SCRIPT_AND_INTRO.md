@@ -1,166 +1,191 @@
-# 5–7 Minute Executive Demo Script & Introduction
+# Easy 5–7 Minute Demo Guide (Plain-English Presenter Script)
 
-- **Demo Title:** *From Static P&IDs to Living Plant Intelligence: Dataplex Knowledge Catalog & Cloud Spanner Hybrid Search + Graph*
-- **Total Run Time:** **5–7 Minutes** (`1–2 min` Intro &bull; `~3 min` Knowledge Catalog &bull; `~3 min` Cloud Spanner)
-- **Presentation Surface:** **100% Native Google Cloud Console** (**Dataplex Knowledge Catalog Search** & **Spanner Studio**) — Zero Custom UI
-- **Dataset:** [`okf_bundle/`](../okf_bundle) — Open Knowledge Format (OKF v0.2) for Nuclear/Process Plant Engineering (`100` governed entities, `61` Equipment specs, `24` SIS Instrument specs, `288` P&ID stream connections, IEC 61882 HAZOP standards, and cross-drawing `⚠️ CONFLICT` discrepancies)
-
----
-
-## Pre-Demo Browser Tabs (Open Before Starting)
-
-1. **Tab 1 — Architecture Visual:** [`docs/ntt-kg-demo-architecture.html`](./ntt-kg-demo-architecture.html)
-2. **Tab 2 — Dataplex Knowledge Catalog Search:**
-   `https://console.cloud.google.com/dataplex/search?project=<YOUR_GCP_PROJECT_ID>` *(Ensure **Natural language search** toggle is **ON**)*
-3. **Tab 3 — Cloud Spanner Studio (`ntt-kg-demo` / `plant-kg`):**
-   `https://console.cloud.google.com/spanner/instances/ntt-kg-demo/databases/plant-kg/studio?project=<YOUR_GCP_PROJECT_ID>` *(Pre-paste **Query A** and **Query B** below into two editor tabs so zero typing is needed live)*
+- **Total Time:** **5–7 Minutes**
+  - **Part 1 — Intro:** `1–2 minutes` *(Set the story in everyday words)*
+  - **Part 2 — Knowledge Catalog:** `~3 minutes` *(Search in plain English—no code at all)*
+  - **Part 3 — Cloud Spanner:** `~3 minutes` *(Click "Run" on 2 pre-pasted queries: Hybrid Search + Visual Map)*
+- **No Coding Live:** You will **not** write any code during the demo. Everything is either plain-English search or clicking the blue **Run** button on two pre-pasted tabs!
 
 ---
 
-## Segment 1: Executive Introduction (`1–2 Minutes`)
+## Quick Dictionary (In Case Someone Asks What an Equipment Code Means)
 
-### 1.1 The Business Problem & Hook (`~60s`)
-> *"Industrial and energy enterprises sit on thousands of P&IDs, equipment datasheets, safety interlocks, and HAZOP manuals. When an engineer asks, **'What protects our Residual Heat Removal heat exchanger if suction flow drops during reactor cooldown—and do our drawings agree?'**, traditional tools break down:*
-> - *A **Keyword Engine** matches exact tags like `RH-FCV-610` or `Interlock G`, but misses documents describing 'cooldown bypass cavitation' in plain words.*
-> - *A **Vector Database** understands conceptual symptoms, but loses exact alphanumeric precision on P&ID tags and drawing numbers.*
-> - *Neither one can trace **multi-hop piping and safety interlocks**—and across the enterprise, engineers need a governed **Knowledge Catalog** where anyone can search plant knowledge in plain English.*
+You don't need to be an engineer! Only 4 items appear on screen—think of them like parts of a home heating/cooling system:
+- **`CBS-TK-10A`** = **Emergency Water Tank (Sump)** *(stores cooling water)* -> protected by chamber `CBS-TK-101A` and flexible pipe joint `CBS-EP-36A`
+- **`RH-P-8A`** = **Cooling Water Pump** *(pumps water out of the tank)*
+- **`RH-E-9A`** = **Heat Exchanger (Cooler)** *(cools the hot water down—and has a **red-flag conflict** between two plant blueprints!)*
+- **`FIS-610`** & **`FIS-7325`** = **Smart Flow Safety Switches** *(sensors that automatically open a bypass valve if water flow drops too low so the pump doesn't overheat)*
+
+---
+
+## 2-Minute Prep Before Your Meeting Starts
+
+Open these **3 browser tabs** ahead of time so your demo is effortless:
+
+1. **Tab 1 (The Big Picture Diagram):** Open [`docs/ntt-kg-demo-architecture.html`](./ntt-kg-demo-architecture.html) in your browser.
+2. **Tab 2 (Knowledge Catalog):** Go to **Google Cloud Console $\rightarrow$ Dataplex $\rightarrow$ Search**
+   `https://console.cloud.google.com/dataplex/search?project=<YOUR_GCP_PROJECT_ID>`
+   - *Check:* Make sure the **"Natural language search"** toggle switch near the search bar is turned **ON**.
+3. **Tab 3 (Spanner Studio):** Go to **Google Cloud Console $\rightarrow$ Spanner $\rightarrow$ `ntt-kg-demo` $\rightarrow$ `plant-kg` $\rightarrow$ Spanner Studio**
+   `https://console.cloud.google.com/spanner/instances/ntt-kg-demo/databases/plant-kg/studio?project=<YOUR_GCP_PROJECT_ID>`
+   - *Prep Trick:* Click **`+` (New SQL editor tab)** twice and copy-paste **Query 1** (from Part 3A below) into the first tab and **Query 2** (from Part 3B below) into the second tab *before* the call. During the demo, all you do is click **Run**!
+
+---
+
+## Part 1: Introduction (`1–2 Minutes`)
+
+### What to Show
+Start on **Tab 1** (the visual diagram).
+
+### What to Say (Plain-English Story)
+> *"Think about how much critical knowledge inside a company is trapped in hundreds of manuals, PDFs, and engineering diagrams.*
 >
-> *In the next 5 minutes—with **zero custom UI**, right inside the **Google Cloud Console**—we'll show how **Dataplex Knowledge Catalog** and **Cloud Spanner** solve discovery, hybrid retrieval, and graph reasoning together."*
-
-### 1.2 Architecture Glance (`~30s` — Tab 1)
-Point briefly to [`docs/ntt-kg-demo-architecture.html`](./ntt-kg-demo-architecture.html):
-- **Pillar 1 — Dataplex Knowledge Catalog:** 100 curated OKF plant entries + Custom Aspect (`okf-plant-asset-aspect`) + Business Glossary + auto-cataloged Spanner tables, searchable via **Global Natural Language Search**.
-- **Pillar 2 — Cloud Spanner Multi-Model Engine:** Native SQL embeddings (`ML.PREDICT` calling Vertex AI `text-embedding-005`), Full-Text Search, Vector Search, **Reciprocal Rank Fusion (RRF) Hybrid Search**, and a 5-Node **ISO GQL Property Graph**—all in one database.
+> *When someone asks a real-world question—like **'Which cooler handles shutdown cooling, what safety sensor protects it if water flow drops, and do all our blueprints agree?'**—ordinary search tools struggle for three reasons:*
+> 1. ***Normal keyword search** is like `Ctrl+F`: it's great if you already know exact part numbers like `FIS-610`, but useless if you type 'prevent pump overheating' and the manual used different words.*
+> 2. ***AI vector search** understands meaning and concepts, but often mixes up similar-looking part numbers and codes.*
+> 3. ***Neither one shows how things connect**—like which tank feeds which pump and which cooler.*
+>
+> *In the next 5 minutes, right inside the standard Google Cloud screen with zero custom apps, I'll show you two tools working together:*
+> - *First, **Knowledge Catalog**—which works like Google Search for non-technical users to find equipment and spot safety warnings in plain English.*
+> - *Second, **Cloud Spanner**—which combines exact part-number search, AI meaning search, and a clickable visual equipment map all in one place."*
 
 ---
 
-## Segment 2: Dataplex Knowledge Catalog — Natural Language Search (`~2.5–3 Minutes`)
+## Part 2: Knowledge Catalog — Plain-English Discovery (`~3 Minutes`)
 
 Switch to **Tab 2 (Dataplex Knowledge Catalog $\rightarrow$ Search)**.
 
-### Beat 2.1 — Natural Language Semantic Discovery (`~1.5 min`)
-1. With **Natural language search** toggled **ON**, paste and run:
+### Step 2A: Ask a Question in Everyday English (`~1.5 mins`)
+1. **[Click & Paste]** into the top search bar and press **Enter**:
    ```text
    heat exchangers that cool reactor coolant during shutdown or post-accident sump recirculation
    ```
-2. **Talk-Track:**
-   - *"Notice I didn't type a single tag code like `RH-E-9A` or `SS-E-106`. Knowledge Catalog understands engineering intent and surfaces **RHR Loop A & B Heat Exchangers (`RH-E-9A`, `RH-E-9B`)** and **Post Accident Sample Heat Exchanger (`SS-E-106`)**—right alongside our physical Spanner tables."*
-3. Click **`RH-E-9A — RHR Loop A Heat Exchanger`** $\rightarrow$ open **Details / Aspects**:
-   - Highlight **`OKF Plant Engineering Asset Aspect` (`okf-plant-asset-aspect`)**:
-     - `tag`: `RH-E-9A` | `unit_code`: `RH / SI` | `safety_classification`: `Safety Class 2 and 3`
-     - `has_discrepancy_warning`: **`true`** *(instant governance signal that two NRC drawings conflict on this asset!)*
-     - `gcs_markdown_uri` & `spanner_entity_id`: `EQ:RH-E-9A` *(end-to-end lineage from raw Markdown in GCS to the Spanner Graph node).*
+2. **[What You'll See]:** Right at the top, you'll see **`RH-E-9B`** and **`RH-E-9A — RHR Loop A Heat Exchanger`**.
+3. **[Say This]:**
+   > *"Notice I didn't type any part numbers or technical codes—just a plain-English question. Knowledge Catalog understood what I meant and immediately found the exact cooling equipment (`RH-E-9A` and `RH-E-9B`), right alongside the database tables where they live."*
+4. **[Click]** on **`RH-E-9A — RHR Loop A Heat Exchanger`** in the results list and scroll slightly down to the **Aspects (`OKF Plant Engineering Asset Aspect`)** box:
+   - **[Point Out 3 Simple Fields]:**
+     - **`safety_classification`:** Shows its safety rating (`Safety Class 2 and 3`).
+     - **`has_discrepancy_warning: true`:** *"Look right here—Knowledge Catalog flags `true` for discrepancy warning! That immediately alerts our team that two engineering drawings disagree on this cooler before anyone makes a costly mistake."*
+     - **`gcs_markdown_uri`:** Direct link back to the original source document.
 
-### Beat 2.2 — Hybrid Natural Language + Custom Aspect Filtering (`~1–1.5 min`)
-1. Back in the Knowledge Catalog search bar, blend natural language with a structured custom aspect predicate:
+### Step 2B: Combine Plain English + a One-Line Filter (`~1.5 mins`)
+1. **[Click Back]** to the Knowledge Catalog search bar, paste this, and press **Enter**:
+   ```text
+   flow switches that prevent charging pump deadheading or cavitation
+   ```
+   *(Instant plain-English match: surfaces the safety flow switches `FIS-7325` and `FIS-610` even though we described the problem—"pump overheating/cavitation"—instead of typing their part codes!)*
+2. **[Optional 20-Second Bonus Filter]:** Show that you can also filter specifically for items with active safety warnings:
    ```text
    safety interlock AND okf-plant-asset-aspect.has_discrepancy_warning:true
    ```
-   *(Or run `flow switches that prevent charging pump deadheading or cavitation` to surface `FIS-7325`, `FIS-7326`, and `FIS-610`.)*
-2. **Transition Line to Spanner:**
-   > *"Knowledge Catalog lets any engineer or data steward discover governed plant knowledge in plain English and spot flagged safety warnings (`RH-E-9A` & `FIS-610`). Now let's jump into **Cloud Spanner Studio** to run deep **Hybrid Search** and **multi-hop P&ID Graph analysis** on those exact assets."*
+3. **[Transition to Spanner — Say This]:**
+   > *"So Knowledge Catalog makes it effortless for anyone in the business to find trusted assets and spot flagged items like `RH-E-9A` and `FIS-610`. Now, what if an engineer or AI assistant needs to dig deeper into the manuals AND trace every pipe connected to that equipment? Let's switch to **Cloud Spanner**."*
 
 ---
 
-## Segment 3: Cloud Spanner — Hybrid Search (RRF) & Property Graph (`~2.5–3 Minutes`)
+## Part 3: Cloud Spanner — Hybrid Search & Visual Equipment Map (`~3 Minutes`)
 
-Switch to **Tab 3 (Cloud Spanner Studio)**.
+Switch to **Tab 3 (Spanner Studio)**.
 
-### Beat 3.1 — Hero Query: Spanner Hybrid Search with Reciprocal Rank Fusion (`~1.5 min`)
-Run **Editor Tab A** (pre-pasted):
-```sql
-@{OPTIMIZER_VERSION=7}
-WITH
-  QueryVector AS (
-    SELECT embeddings.values AS q_vec
-    FROM ML.PREDICT(
-      MODEL OkfEmbeddingModel,
-      (SELECT 'Interlock G RHR heat exchanger bypass low suction flow cavitation Safety Class 2' AS content)
-    )
-  ),
-  KeywordCandidates AS (
-    SELECT item.ChunkId, off + 1 AS fts_rank
-    FROM UNNEST(
-      ARRAY(
-        SELECT AS STRUCT c.ChunkId
-        FROM OkfChunks AS c
-        WHERE SEARCH(c.ChunkTokens, '"Interlock G" OR cavitation OR "Safety Class 2" OR bypass OR RH-FCV-610')
-        ORDER BY SCORE(c.ChunkTokens, '"Interlock G" OR cavitation OR "Safety Class 2" OR bypass OR RH-FCV-610') DESC, c.ChunkId
-        LIMIT 30
-      )
-    ) AS item WITH OFFSET AS off
-  ),
-  VectorCandidates AS (
-    SELECT item.ChunkId, item.cosine_dist, off + 1 AS vec_rank
-    FROM UNNEST(
-      ARRAY(
-        SELECT AS STRUCT c.ChunkId, COSINE_DISTANCE(c.Embedding, q.q_vec) AS cosine_dist
-        FROM OkfChunks AS c
-        CROSS JOIN QueryVector AS q
-        WHERE c.Embedding IS NOT NULL
-        ORDER BY cosine_dist ASC, c.ChunkId
-        LIMIT 30
-      )
-    ) AS item WITH OFFSET AS off
-  ),
-  RrfFused AS (
-    SELECT
-      COALESCE(k.ChunkId, v.ChunkId) AS ChunkId,
-      k.fts_rank,
-      v.vec_rank,
-      (
-        IF(k.fts_rank IS NOT NULL, 1.0 / (60.0 + k.fts_rank), 0.0) +
-        IF(v.vec_rank IS NOT NULL, 1.0 / (60.0 + v.vec_rank), 0.0)
-      ) AS rrf_score
-    FROM KeywordCandidates AS k
-    FULL OUTER JOIN VectorCandidates AS v
-      ON k.ChunkId = v.ChunkId
-  )
-SELECT
-  c.Tag,
-  c.EntityLabel,
-  c.UnitCode,
-  c.SectionHeading,
-  c.HasConflict,
-  f.fts_rank,
-  f.vec_rank,
-  ROUND(f.rrf_score, 5) AS rrf_hybrid_score,
-  SUBSTR(c.ChunkText, 1, 240) AS grounded_excerpt
-FROM RrfFused AS f
-JOIN OkfChunks AS c ON c.ChunkId = f.ChunkId
-ORDER BY f.rrf_score DESC
-LIMIT 8;
-```
-- **2 Points to Highlight (`60s`):**
-  1. **Native In-Database Embeddings (`ML.PREDICT`):** No Python client or external vector DB—Spanner calls Vertex AI `text-embedding-005` directly inside SQL (`QueryVector` CTE).
-  2. **Reciprocal Rank Fusion (`fts_rank` + `vec_rank` $\rightarrow$ `rrf_hybrid_score`):** Point to the result columns: **`RH-E-9A`** (`fts_rank = 5`, `vec_rank = 1`, `rrf = 0.03178`) and **`FIS-610`** (`fts_rank = 4`, `vec_rank = 7`, `rrf = 0.03055`) combine exact `"Interlock G"` / `"Safety Class 2"` keyword precision with semantic *"low suction flow cavitation"* matching to rank `#1` and `#2`!
+### Step 3A: Spanner Hybrid Search — Exact Codes + AI Meaning Together (`~1.5 mins`)
+1. **[Click]** your pre-pasted **Editor Tab 1** and click the blue **Run** button:
+   ```sql
+   @{OPTIMIZER_VERSION=7}
+   WITH
+     QueryVector AS (
+       SELECT embeddings.values AS q_vec
+       FROM ML.PREDICT(
+         MODEL OkfEmbeddingModel,
+         (SELECT 'Interlock G RHR heat exchanger bypass low suction flow cavitation Safety Class 2' AS content)
+       )
+     ),
+     KeywordCandidates AS (
+       SELECT item.ChunkId, off + 1 AS fts_rank
+       FROM UNNEST(
+         ARRAY(
+           SELECT AS STRUCT c.ChunkId
+           FROM OkfChunks AS c
+           WHERE SEARCH(c.ChunkTokens, '"Interlock G" OR cavitation OR "Safety Class 2" OR bypass OR RH-FCV-610')
+           ORDER BY SCORE(c.ChunkTokens, '"Interlock G" OR cavitation OR "Safety Class 2" OR bypass OR RH-FCV-610') DESC, c.ChunkId
+           LIMIT 30
+         )
+       ) AS item WITH OFFSET AS off
+     ),
+     VectorCandidates AS (
+       SELECT item.ChunkId, item.cosine_dist, off + 1 AS vec_rank
+       FROM UNNEST(
+         ARRAY(
+           SELECT AS STRUCT c.ChunkId, COSINE_DISTANCE(c.Embedding, q.q_vec) AS cosine_dist
+           FROM OkfChunks AS c
+           CROSS JOIN QueryVector AS q
+           WHERE c.Embedding IS NOT NULL
+           ORDER BY cosine_dist ASC, c.ChunkId
+           LIMIT 30
+         )
+       ) AS item WITH OFFSET AS off
+     ),
+     RrfFused AS (
+       SELECT
+         COALESCE(k.ChunkId, v.ChunkId) AS ChunkId,
+         k.fts_rank,
+         v.vec_rank,
+         (
+           IF(k.fts_rank IS NOT NULL, 1.0 / (60.0 + k.fts_rank), 0.0) +
+           IF(v.vec_rank IS NOT NULL, 1.0 / (60.0 + v.vec_rank), 0.0)
+         ) AS rrf_score
+       FROM KeywordCandidates AS k
+       FULL OUTER JOIN VectorCandidates AS v
+         ON k.ChunkId = v.ChunkId
+     )
+   SELECT
+     c.Tag,
+     c.EntityLabel,
+     c.SectionHeading,
+     c.HasConflict,
+     f.fts_rank AS exact_keyword_rank,
+     f.vec_rank AS ai_meaning_rank,
+     ROUND(f.rrf_score, 5) AS combined_hybrid_score,
+     SUBSTR(c.ChunkText, 1, 220) AS snippet
+   FROM RrfFused AS f
+   JOIN OkfChunks AS c ON c.ChunkId = f.ChunkId
+   ORDER BY f.rrf_score DESC
+   LIMIT 8;
+   ```
+2. **[Point to the Results Table & Say This]:**
+   > *"Don't worry about the SQL—just look at what Spanner did in under a second, and look at these three columns (`exact_keyword_rank`, `ai_meaning_rank`, and `combined_hybrid_score`):*
+   > - *First, Spanner called Google's AI model directly inside the database to understand the meaning of our question—no extra app or middleman needed.*
+   > - *Second, it ran **both** an **exact code search** (`Interlock G`, `Safety Class 2`) AND an **AI meaning search** (`low suction flow cavitation`) at the same time, then blended both rankings together.*
+   > - *Look at rows 1 and 2: our cooler **`RH-E-9A`** (ranked #5 by keywords, #1 by AI meaning) and safety switch **`FIS-610`** (ranked #4 by keywords, #7 by AI meaning) rise straight to the top! Even if a document only matched by meaning or only matched by part number, Hybrid Search catches it."*
 
-### Beat 3.2 — Visual Multi-Hop P&ID Flow & Safety Interlock Graph (`~1.5 min`)
-Switch to **Editor Tab B** and click **Run**:
-```sql
-GRAPH PlantKnowledgeGraph
-MATCH p1 = (sump:Equipment)-[:FLOWS_TO]->{1,3}(hx:Equipment)
-WHERE sump.Tag IN ('CBS-TK-10A', 'CBS-TK-10B')
-RETURN SAFE_TO_JSON(p1) AS graph_path
-UNION ALL
-MATCH p2 = (inst:Instrument)-[:MONITORS]->(eq:Equipment)-[:BELONGS_TO_UNIT]->(u:PlantUnit)
-WHERE eq.Tag IN ('CBS-TK-10A', 'CBS-TK-101A', 'RH-P-8A', 'RH-E-9A')
-  AND inst.IsFullSpec = TRUE
-RETURN SAFE_TO_JSON(p2) AS graph_path;
-```
-1. Click the **`Graph`** tab in the Results pane (and briefly click **`Schema View`** for 5 seconds to show the 5 color-coded node types: `PlantUnit`, `Equipment`, `Instrument`, `ProcessBoundary`, `GovernanceDoc`).
-2. Click along the live emergency cooling chain on the canvas:
-   `CBS-TK-10A` *(Sump A, `LE-2384-1`)* $\rightarrow$ `CBS-TK-101A` *(Chamber A, leak switch `LS-2356`)* & `CBS-EP-36A` *(Bellows)* $\rightarrow$ `RH-P-8A` *(RHR Pump A, interlocked with `FIS-610`)* $\rightarrow$ `RH-E-9A` *(RHR Heat Exchanger A)*.
+### Step 3B: Spanner Graph — Clickable Visual Equipment Map (`~1.5 mins`)
+1. **[Click]** your pre-pasted **Editor Tab 2** and click the blue **Run** button:
+   ```sql
+   GRAPH PlantKnowledgeGraph
+   MATCH p1 = (sump:Equipment)-[:FLOWS_TO]->{1,3}(hx:Equipment)
+   WHERE sump.Tag IN ('CBS-TK-10A', 'CBS-TK-10B')
+   RETURN SAFE_TO_JSON(p1) AS graph_path
+   UNION ALL
+   MATCH p2 = (inst:Instrument)-[:MONITORS]->(eq:Equipment)-[:BELONGS_TO_UNIT]->(u:PlantUnit)
+   WHERE eq.Tag IN ('CBS-TK-10A', 'CBS-TK-101A', 'RH-P-8A', 'RH-E-9A')
+     AND inst.IsFullSpec = TRUE
+   RETURN SAFE_TO_JSON(p2) AS graph_path;
+   ```
+2. **[IMPORTANT CLICK]:** In the bottom **Results** area, switch from `Table` to the **`Graph`** tab! *(Optional: click **`Schema View`** for 3 seconds to show the 5 color-coded categories: Units, Equipment, Instruments, Boundaries, and Documents, then switch back to the graph).*
+3. **[Click Nodes on the Map & Say This]:**
+   > *"Instead of reading through 10 separate piping manuals, Spanner turns our data into a live interactive map. Watch how easy it is to follow the water path:*
+   > - *Here is the emergency water tank (`CBS-TK-10A`), passing through its protective chamber (`CBS-TK-101A`) and flexible joint (`CBS-EP-36A`), straight into the cooling pump (`RH-P-8A`), and into our heat exchanger (`RH-E-9A`).*
+   > - *And branching right off them are the exact safety sensors watching over each step—including flow switch `FIS-610`!"*
 
-### Closing Takeaway (`15s`)
-> *"Normally, building this requires stitching together Elasticsearch for keywords, a separate vector DB, a separate graph DB, sync pipelines that drift out of date, plus a standalone catalog. On Google Cloud, **Dataplex Knowledge Catalog** gives business and engineering users **Global Natural Language Search**, while **Cloud Spanner** runs **Full-Text, Native Vector Embeddings, RRF Hybrid Search, and ISO GQL Graphs** in a single strongly consistent engine."*
+### Wrap-Up Sentence (`15 Seconds`)
+> *"To sum up: normally, companies have to buy and stitch together four separate systems—a keyword search tool, an AI vector database, a graph database, and a data catalog—and keep copying data between them. With Google Cloud, **Knowledge Catalog** gives everyone plain-English search across the business, and **Cloud Spanner** handles **exact keywords, AI meaning search, and visual relationship maps** all inside one trusted database."*
 
 ---
 
-## Appendix: Optional Q&A Deep-Dive Queries (`If Audience Asks`)
+## Optional Backup Query (Only If Someone Asks in Q&A!)
 
-### Q&A Bonus — Single-Query Hybrid Search + Graph Expansion (`RRF` + `GRAPH_TABLE`)
-*"Can you join Hybrid Search and Graph traversal in a single SQL query?"* — Yes (`DM-8` Fuel Pool Demineralizer, `F-33` Prefilter, `F-34` Postfilter + `PDIS-2622/2623/2624` & `FISL-2626`):
+**"Can Spanner run Hybrid Search AND walk the Equipment Graph in a single step?"**
+Yes! Paste this query—it uses Hybrid Search to find the water purifier (**`DM-8`**, prefilter `F-33`, postfilter `F-34`) and automatically pulls every connected pressure sensor and pipe in the exact same query:
 ```sql
 @{OPTIMIZER_VERSION=7}
 WITH
@@ -227,15 +252,13 @@ WITH
   )
 SELECT
   h.Tag AS matched_tag,
-  ROUND(h.best_rrf_score, 5) AS rrf_score,
+  ROUND(h.best_rrf_score, 5) AS hybrid_score,
   g.EquipmentTitle,
   g.MonitoringInstrument,
   g.AlarmOrInterlock,
-  g.OutgoingStream,
   g.FlowsToTag
 FROM TopHybridEntities AS h
 JOIN GraphContext AS g
   ON h.EntityId = g.EntityId
 ORDER BY h.best_rrf_score DESC, g.MonitoringInstrument;
 ```
-*(Additional standalone Keyword-only, Vector-only (`CS-P-2A` / `FIS-7325`), and Conflict Blast Radius queries are available in [`sql/demo_queries_spanner.sql`](../sql/demo_queries_spanner.sql).)*
