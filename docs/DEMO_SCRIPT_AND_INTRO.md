@@ -93,6 +93,7 @@ Switch to **Tab 3 (Spanner Studio)**.
    ```sql
    @{OPTIMIZER_VERSION=7}
    WITH
+     -- 1) Turn our plain-English question into AI meaning numbers right inside SQL
      QueryVector AS (
        SELECT embeddings.values AS q_vec
        FROM ML.PREDICT(
@@ -100,6 +101,7 @@ Switch to **Tab 3 (Spanner Studio)**.
          (SELECT 'Interlock G RHR heat exchanger bypass low suction flow cavitation Safety Class 2' AS content)
        )
      ),
+     -- 2) Exact Keyword Search: find Top 30 matches for exact codes & phrases (#1, #2, #3...)
      KeywordCandidates AS (
        SELECT item.ChunkId, off + 1 AS fts_rank
        FROM UNNEST(
@@ -112,6 +114,7 @@ Switch to **Tab 3 (Spanner Studio)**.
          )
        ) AS item WITH OFFSET AS off
      ),
+     -- 3) AI Meaning Search: find Top 30 matches by concept similarity (#1, #2, #3...)
      VectorCandidates AS (
        SELECT item.ChunkId, item.cosine_dist, off + 1 AS vec_rank
        FROM UNNEST(
@@ -125,6 +128,7 @@ Switch to **Tab 3 (Spanner Studio)**.
          )
        ) AS item WITH OFFSET AS off
      ),
+     -- 4) Fair Rank Merger (RRF): blend both rank lists into one combined score
      RrfFused AS (
        SELECT
          COALESCE(k.ChunkId, v.ChunkId) AS ChunkId,
@@ -138,6 +142,7 @@ Switch to **Tab 3 (Spanner Studio)**.
        FULL OUTER JOIN VectorCandidates AS v
          ON k.ChunkId = v.ChunkId
      )
+   -- 5) Show the Top 8 winning paragraphs with side-by-side rankings
    SELECT
      c.Tag,
      c.EntityLabel,
@@ -152,28 +157,38 @@ Switch to **Tab 3 (Spanner Studio)**.
    ORDER BY f.rrf_score DESC
    LIMIT 8;
    ```
-2. **[Point to the Results Table & Say This]:**
-   > *"Don't worry about the SQL—just look at what Spanner did in under a second, and look at these three columns (`exact_keyword_rank`, `ai_meaning_rank`, and `combined_hybrid_score`):*
-   > - *First, Spanner called Google's AI model directly inside the database to understand the meaning of our question—no extra app or middleman needed.*
-   > - *Second, it ran **both** an **exact code search** (`Interlock G`, `Safety Class 2`) AND an **AI meaning search** (`low suction flow cavitation`) at the same time, then blended both rankings together.*
-   > - *Look at rows 1 and 2: our cooler **`RH-E-9A`** (ranked #5 by keywords, #1 by AI meaning) and safety switch **`FIS-610`** (ranked #4 by keywords, #7 by AI meaning) rise straight to the top! Even if a document only matched by meaning or only matched by part number, Hybrid Search catches it."*
+2. **How Query 3A Works (Explain in ~25 Seconds):**
+   > *"Let me quickly walk through what the four building blocks in this query do—all in one database call:*
+   > 1. ***`QueryVector` (`ML.PREDICT`):** Spanner calls Google's Vertex AI model directly inside SQL to turn our question into 'meaning numbers' (an embedding)—no extra Python server or middleman needed.*
+   > 2. ***`KeywordCandidates` (`SEARCH` + `SCORE`):** Runs a classic exact-word search for specific codes like `'Interlock G'`, `'Safety Class 2'`, and `'RH-FCV-610'`, ranking the top 30 hits `#1` to `#30`.*
+   > 3. ***`VectorCandidates` (`COSINE_DISTANCE`):** Simultaneously runs an AI meaning search for concepts like 'low suction flow cavitation', also ranking its top 30 hits `#1` to `#30`.*
+   > 4. ***`RrfFused` (Reciprocal Rank Fusion):** Keyword scores and AI distance numbers use completely different scales—like comparing miles to kilograms—so you can't just add them. Instead, RRF fairly blends their **finishing positions** (`1 / (60 + rank)`), rewarding passages that rank high in **both** exact codes and AI meaning while still rescuing hits found by only one side."*
+3. **What to Point Out in the Results Table:**
+   > *"Look at rows 1 and 2 (`exact_keyword_rank`, `ai_meaning_rank`, and `combined_hybrid_score`): our heat exchanger **`RH-E-9A`** (#5 by keywords, #1 by AI meaning) and safety switch **`FIS-610`** (#4 by keywords, #7 by AI meaning) rise straight to the very top—complete with `HasConflict = true` on `RH-E-9A`!"*
 
 ### Step 3B: Spanner Graph — Clickable Visual Equipment Map (`~1.5 mins`)
 1. **[Click]** your pre-pasted **Editor Tab 2** and click the blue **Run** button:
    ```sql
    GRAPH PlantKnowledgeGraph
+   -- Part 1: Start at the emergency water tanks and follow pipes 1 to 3 hops downstream
    MATCH p1 = (sump:Equipment)-[:FLOWS_TO]->{1,3}(hx:Equipment)
    WHERE sump.Tag IN ('CBS-TK-10A', 'CBS-TK-10B')
    RETURN SAFE_TO_JSON(p1) AS graph_path
    UNION ALL
+   -- Part 2: Attach the safety sensors monitoring that equipment and their plant systems
    MATCH p2 = (inst:Instrument)-[:MONITORS]->(eq:Equipment)-[:BELONGS_TO_UNIT]->(u:PlantUnit)
    WHERE eq.Tag IN ('CBS-TK-10A', 'CBS-TK-101A', 'RH-P-8A', 'RH-E-9A')
      AND inst.IsFullSpec = TRUE
    RETURN SAFE_TO_JSON(p2) AS graph_path;
    ```
-2. **[IMPORTANT CLICK]:** In the bottom **Results** area, switch from `Table` to the **`Graph`** tab! *(Optional: click **`Schema View`** for 3 seconds to show the 5 color-coded categories: Units, Equipment, Instruments, Boundaries, and Documents, then switch back to the graph).*
-3. **[Click Nodes on the Map & Say This]:**
-   > *"Instead of reading through 10 separate piping manuals, Spanner turns our data into a live interactive map. Watch how easy it is to follow the water path:*
+2. **How Query 3B Works (Explain in ~20 Seconds):**
+   > *"Notice how short and visual this graph query is compared to writing messy SQL table joins:*
+   > 1. ***`GRAPH PlantKnowledgeGraph`:** Tells Spanner to read the exact same database tables as a connected network of equipment and pipes—no separate graph database or data copy required.*
+   > 2. ***`MATCH p1 = (sump)-[:FLOWS_TO]->{1,3}(hx)`:** Reads just like arrows on a whiteboard! It starts at the emergency water tanks (`CBS-TK-10A`, `CBS-TK-10B`) and automatically hops **1 to 3 pipe connections downstream** (`->{1,3}`) to trace where the water goes.*
+   > 3. ***`UNION ALL MATCH p2 = (inst)-[:MONITORS]->(eq)-[:BELONGS_TO_UNIT]->(u)`:** Layers on every full-spec safety sensor (`MONITORS`) watching over those parts plus the plant unit (`BELONGS_TO_UNIT`) each piece belongs to, and **`SAFE_TO_JSON`** packages those paths so Spanner Studio draws an interactive map."*
+3. **[IMPORTANT CLICK]:** In the bottom **Results** area, switch from `Table` to the **`Graph`** tab! *(Optional: click **`Schema View`** for 3 seconds to show the 5 color-coded categories: Units, Equipment, Instruments, Boundaries, and Documents, then switch back to the graph).*
+4. **[Click Nodes on the Map & Say This]:**
+   > *"Instead of flipping through 10 separate piping manuals, watch how easy it is to follow the water path right on screen:*
    > - *Here is the emergency water tank (`CBS-TK-10A`), passing through its protective chamber (`CBS-TK-101A`) and flexible joint (`CBS-EP-36A`), straight into the cooling pump (`RH-P-8A`), and into our heat exchanger (`RH-E-9A`).*
    > - *And branching right off them are the exact safety sensors watching over each step—including flow switch `FIS-610`!"*
 
