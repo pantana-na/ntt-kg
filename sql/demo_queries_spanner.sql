@@ -76,8 +76,8 @@ WITH
       ARRAY(
         SELECT AS STRUCT c.ChunkId
         FROM OkfChunks AS c
-        WHERE SEARCH(c.ChunkTokens, '"Interlock G" OR cavitation OR "Safety Class 2" OR bypass OR RH-FCV-610')
-        ORDER BY SCORE(c.ChunkTokens, '"Interlock G" OR cavitation OR "Safety Class 2" OR bypass OR RH-FCV-610') DESC, c.ChunkId
+        WHERE SEARCH(c.ChunkTokens, 'Interlock G RHR heat exchanger bypass low suction flow cavitation Safety Class 2')
+        ORDER BY SCORE(c.ChunkTokens, 'Interlock G RHR heat exchanger bypass low suction flow cavitation Safety Class 2') DESC, c.ChunkId
         LIMIT 30
       )
     ) AS item WITH OFFSET AS off

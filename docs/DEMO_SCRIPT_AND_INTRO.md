@@ -116,15 +116,15 @@ Switch to **Tab 3 (Spanner Studio)**.
          (SELECT 'Interlock G RHR heat exchanger bypass low suction flow cavitation Safety Class 2' AS content)
        )
      ),
-     -- 2) Exact Keyword Search: find Top 30 matches for exact codes & phrases (#1, #2, #3...)
+     -- 2) Exact Keyword Search: pass the EXACT SAME plain-English question into SEARCH()
      KeywordCandidates AS (
        SELECT item.ChunkId, off + 1 AS fts_rank
        FROM UNNEST(
          ARRAY(
            SELECT AS STRUCT c.ChunkId
            FROM OkfChunks AS c
-           WHERE SEARCH(c.ChunkTokens, '"Interlock G" OR cavitation OR "Safety Class 2" OR bypass OR RH-FCV-610')
-           ORDER BY SCORE(c.ChunkTokens, '"Interlock G" OR cavitation OR "Safety Class 2" OR bypass OR RH-FCV-610') DESC, c.ChunkId
+           WHERE SEARCH(c.ChunkTokens, 'Interlock G RHR heat exchanger bypass low suction flow cavitation Safety Class 2')
+           ORDER BY SCORE(c.ChunkTokens, 'Interlock G RHR heat exchanger bypass low suction flow cavitation Safety Class 2') DESC, c.ChunkId
            LIMIT 30
          )
        ) AS item WITH OFFSET AS off
@@ -173,13 +173,15 @@ Switch to **Tab 3 (Spanner Studio)**.
    LIMIT 8;
    ```
 2. **How Query 3A Works (Explain in ~25 Seconds):**
-   > *"Let me quickly walk through what the four building blocks in this query do—all in one database call:*
-   > 1. ***`QueryVector` (`ML.PREDICT`):** Spanner calls Google's Vertex AI model directly inside SQL to turn our question into 'meaning numbers' (an embedding)—no extra Python server or middleman needed.*
-   > 2. ***`KeywordCandidates` (`SEARCH` + `SCORE`):** Runs a classic exact-word search for specific codes like `'Interlock G'`, `'Safety Class 2'`, and `'RH-FCV-610'`, ranking the top 30 hits `#1` to `#30`.*
-   > 3. ***`VectorCandidates` (`COSINE_DISTANCE`):** Simultaneously runs an AI meaning search for concepts like 'low suction flow cavitation', also ranking its top 30 hits `#1` to `#30`.*
-   > 4. ***`RrfFused` (Reciprocal Rank Fusion):** Keyword scores and AI distance numbers use completely different scales—like comparing miles to kilograms—so you can't just add them. Instead, RRF fairly blends their **finishing positions** (`1 / (60 + rank)`), rewarding passages that rank high in **both** exact codes and AI meaning while still rescuing hits found by only one side."*
+   > *"Notice we pass the **exact same plain-English question** into four building blocks inside one database call:*
+   > 1. ***`QueryVector` (`ML.PREDICT`):** Spanner calls Google's Vertex AI model directly inside SQL to turn our question into 'meaning numbers' (an embedding)—no extra Python server needed.*
+   > 2. ***`KeywordCandidates` (`SEARCH` + `SCORE`):** Runs a strict `Ctrl+F` keyword search on that exact same question—requiring every word to appear in the paragraph.*
+   > 3. ***`VectorCandidates` (`COSINE_DISTANCE`):** Simultaneously runs an AI meaning search, finding passages that match the engineering concept even when the wording differs.*
+   > 4. ***`RrfFused` (Reciprocal Rank Fusion):** Fairly blends their finishing positions (`1 / (60 + rank)`) so neither side's blind spot loses critical safety answers."*
 3. **What to Point Out in the Results Table:**
-   > *"Look at rows 1 and 2 (`exact_keyword_rank`, `ai_meaning_rank`, and `combined_hybrid_score`): our heat exchanger **`RH-E-9A`** (#5 by keywords, #1 by AI meaning) and safety switch **`FIS-610`** (#4 by keywords, #7 by AI meaning) rise straight to the very top—complete with `HasConflict = true` on `RH-E-9A`!"*
+   > *"Look at rows 1 and 2—this visually proves why you need Hybrid Search:*
+   > - ***Row 1 (`FIS-610`):** Pure AI search buried this flow switch down at **#11**, while exact keyword search ranked it **#1**—so Hybrid Search puts it right at **#1**.*
+   > - ***Row 2 (`RH-E-9A`, `HasConflict = true`):** Strict keyword search **completely missed it (`null`)** because the manual didn't use the literal word 'cavitation', while AI meaning search ranked it **#1**—so Hybrid Search rescues it right into **#2**!"*
 
 ### Step 3B: Spanner Graph — Clickable Visual Equipment Map (`~1.5 mins`)
 1. **[Click]** your pre-pasted **Editor Tab 2** and click the blue **Run** button:
