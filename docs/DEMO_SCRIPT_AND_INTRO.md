@@ -1,19 +1,20 @@
 # Easy 5–7 Minute Demo Guide (Plain-English Presenter Script)
 
 - **Total Time:** **5–7 Minutes**
-  - **Part 1 — Intro:** `1–2 minutes` *(Set the story in everyday words)*
-  - **Part 2 — Knowledge Catalog:** `~3 minutes` *(Search in plain English—no code at all)*
+  - **Part 1 — Intro:** `1–2 minutes` *(Set the story around plain-English discovery, data lineage & connected equipment)*
+  - **Part 2 — Knowledge Catalog (Data Lineage Focus):** `~3 minutes` *(Search in plain English & trace 3-stage data lineage from upstream blueprints $\rightarrow$ Cloud Storage $\rightarrow$ Spanner)*
   - **Part 3 — Cloud Spanner:** `~3 minutes` *(Click "Run" on 2 pre-pasted queries: Hybrid Search + Visual Map)*
 - **No Coding Live:** You will **not** write any code during the demo. Everything is either plain-English search or clicking the blue **Run** button on two pre-pasted tabs!
 
 ---
 
-## Quick Dictionary (In Case Someone Asks What an Equipment Code Means)
+## Quick Dictionary (In Case Someone Asks What an Equipment or Drawing Code Means)
 
-You don't need to be an engineer! Only 4 items appear on screen—think of them like parts of a home heating/cooling system:
+You don't need to be an engineer! Only a few items appear on screen—think of them like parts of a home heating/cooling system plus their original blueprints:
+- **`ML101620329 Part 1` & `Part 2` (`PID-1-SI-LR20448` / `PID-1-SI-LR20449`)** = **Upstream Plant Blueprints (PDF Packages)** *(where the equipment rules were extracted from—and where two drawings disagree!)*
 - **`CBS-TK-10A`** = **Emergency Water Tank (Sump)** *(stores cooling water)* -> protected by chamber `CBS-TK-101A` and flexible pipe joint `CBS-EP-36A`
 - **`RH-P-8A`** = **Cooling Water Pump** *(pumps water out of the tank)*
-- **`RH-E-9A`** = **Heat Exchanger (Cooler)** *(cools the hot water down—and has a **red-flag conflict** between two plant blueprints!)*
+- **`RH-E-9A`** = **Heat Exchanger (Cooler)** *(cools the hot water down—and carries a **red-flag lineage conflict** between those two upstream blueprints!)*
 - **`FIS-610`** & **`FIS-7325`** = **Smart Flow Safety Switches** *(sensors that automatically open a bypass valve if water flow drops too low so the pump doesn't overheat)*
 
 ---
@@ -25,7 +26,7 @@ Open these **3 browser tabs** ahead of time so your demo is effortless:
 1. **Tab 1 (The Big Picture Diagram):** Open [`docs/ntt-kg-demo-architecture.html`](./ntt-kg-demo-architecture.html) in your browser.
 2. **Tab 2 (Knowledge Catalog):** Go to **Google Cloud Console $\rightarrow$ Dataplex $\rightarrow$ Search**
    `https://console.cloud.google.com/dataplex/search?project=<YOUR_GCP_PROJECT_ID>`
-   - *Check:* Make sure the **"Natural language search"** toggle switch near the search bar is turned **ON**.
+   - *Check:* Make sure the **"Natural language search"** toggle switch near the search bar is turned **ON** (leave it **ON** for all Knowledge Catalog steps!).
 3. **Tab 3 (Spanner Studio):** Go to **Google Cloud Console $\rightarrow$ Spanner $\rightarrow$ `ntt-kg-demo` $\rightarrow$ `plant-kg` $\rightarrow$ Spanner Studio**
    `https://console.cloud.google.com/spanner/instances/ntt-kg-demo/databases/plant-kg/studio?project=<YOUR_GCP_PROJECT_ID>`
    - *Prep Trick:* Click **`+` (New SQL editor tab)** twice and copy-paste **Query 1** (from Part 3A below) into the first tab and **Query 2** (from Part 3B below) into the second tab *before* the call. During the demo, all you do is click **Run**!
@@ -40,47 +41,61 @@ Start on **Tab 1** (the visual diagram).
 ### What to Say (Plain-English Story)
 > *"Think about how much critical knowledge inside a company is trapped in hundreds of manuals, PDFs, and engineering diagrams.*
 >
-> *When someone asks a real-world question—like **'Which cooler handles shutdown cooling, what safety sensor protects it if water flow drops, and do all our blueprints agree?'**—ordinary search tools struggle for three reasons:*
-> 1. ***Normal keyword search** is like `Ctrl+F`: it's great if you already know exact part numbers like `FIS-610`, but useless if you type 'prevent pump overheating' and the manual used different words.*
-> 2. ***AI vector search** understands meaning and concepts, but often mixes up similar-looking part numbers and codes.*
-> 3. ***Neither one shows how things connect**—like which tank feeds which pump and which cooler.*
+> *When someone asks a real-world question—like **'Which cooler handles shutdown cooling, where did that specification come from, and do all our upstream blueprints agree?'**—ordinary tools struggle for three reasons:*
+> 1. ***Zero data lineage across documents and databases:** Once numbers are copied from PDF blueprints into a database or AI index, nobody knows which blueprint a rule came from—or when two source drawings contradict each other.*
+> 2. ***Keyword vs. AI search trade-offs:** Normal `Ctrl+F` keyword search needs exact part numbers like `FIS-610`, while pure AI vector search understands concepts like 'prevent pump overheating' but often mixes up similar part codes.*
+> 3. ***Hidden downstream impact:** Standard search lists isolated files instead of mapping how tanks, pumps, coolers, sensors, and source documents connect.*
 >
-> *In the next 5 minutes, right inside the standard Google Cloud screen with zero custom apps, I'll show you two tools working together:*
-> - *First, **Knowledge Catalog**—which works like Google Search for non-technical users to find equipment and spot safety warnings in plain English.*
-> - *Second, **Cloud Spanner**—which combines exact part-number search, AI meaning search, and a clickable visual equipment map all in one place."*
+> *In the next 5 minutes, right inside the standard Google Cloud Console with zero custom apps, I'll show you two tools working together:*
+> - *First, **Knowledge Catalog**—giving anyone plain-English discovery plus **end-to-end data lineage** from upstream engineering PDFs $\rightarrow$ curated Cloud Storage specs $\rightarrow$ live Spanner database tables, immediately flagging blueprint conflicts.*
+> - *Second, **Cloud Spanner**—combining exact part-number search, AI meaning search, and a clickable visual equipment & lineage map all in one database."*
 
 ---
 
-## Part 2: Knowledge Catalog — Plain-English Discovery (`~3 Minutes`)
+## Part 2: Knowledge Catalog — Plain-English Discovery & End-to-End Data Lineage (`~3 Minutes`)
 
-Switch to **Tab 2 (Dataplex Knowledge Catalog $\rightarrow$ Search)**.
+Switch to **Tab 2 (Dataplex Knowledge Catalog $\rightarrow$ Search)** *(keep **"Natural language search" ON**)*.
 
-### Step 2A: Ask a Question in Everyday English (`~1.5 mins`)
+### Step 2A: Discover the Asset & Trace Its 3-Stage Data Lineage (`~1.5 mins`)
 1. **[Click & Paste]** into the top search bar and press **Enter**:
    ```text
    heat exchangers that cool reactor coolant during shutdown or post-accident sump recirculation
    ```
-2. **[What You'll See]:** Right at the top, you'll see **`RH-E-9B`** and **`RH-E-9A — RHR Loop A Heat Exchanger`**.
-3. **[Say This]:**
-   > *"Notice I didn't type any part numbers or technical codes—just a plain-English question. Knowledge Catalog understood what I meant and immediately found the exact cooling equipment (`RH-E-9A` and `RH-E-9B`), right alongside the database tables where they live."*
-4. **[Click]** on **`RH-E-9A — RHR Loop A Heat Exchanger`** in the results list and scroll slightly down to the **Aspects (`OKF Plant Engineering Asset Aspect`)** box:
-   - **[Point Out 3 Simple Fields]:**
-     - **`safety_classification`:** Shows its safety rating (`Safety Class 2 and 3`).
-     - **`has_discrepancy_warning: true`:** *"Look right here—Knowledge Catalog flags `true` for discrepancy warning! That immediately alerts our team that two engineering drawings disagree on this cooler before anyone makes a costly mistake."*
-     - **`gcs_markdown_uri`:** Direct link back to the original source document.
+2. **[What You'll See]:** Right at the top, you'll see **`RH-E-9A — RHR Loop A Heat Exchanger`** and **`RH-E-9B`**.
+3. **[Click]** on **`RH-E-9A — RHR Loop A Heat Exchanger`** and scroll slightly down to the **Aspects (`OKF Plant Engineering Asset Aspect`)** box to walk through the **3-Stage Data Lineage Trail**:
+   - **Stage 1 — Upstream Source Blueprints (`governing_standard_or_drawing` + `has_discrepancy_warning`):**
+     - Point out `governing_standard_or_drawing`: **`PID-1-SI-LR20449, PID-1-SI-LR20448, ML101620329-part-1, ML101620329-part-2`**.
+     - Point out `has_discrepancy_warning`: **`true`** (alongside `safety_classification`: `Safety Class 2 (Tube Side) & Safety Class 3 (Shell Side)`).
+   - **Stage 2 — Curated Cloud Storage Knowledge File (`gcs_markdown_uri`):**
+     - Point out `gcs_markdown_uri`: **`gs://<YOUR_GCP_PROJECT_ID>-okf-bundle/okf_bundle/equipment/RH-E-9A.md`** *(the verified Open Knowledge Format spec extracted from those PDFs)*.
+   - **Stage 3 — Downstream Database Node (`spanner_entity_id` & `Platform`):**
+     - Point out `spanner_entity_id`: **`EQ:RH-E-9A`** inside **`Spanner Knowledge Graph`**.
+4. **[Say This]:**
+   > *"With one plain-English search—no part codes needed—Knowledge Catalog found `RH-E-9A` and shows its complete **3-stage data lineage** on one card:*
+   > 1. ***Upstream origin:** It traces straight back to the exact engineering PDF packages (`ML101620329-part-1` and `part-2`) and drawing sheets (`PID-1-SI-LR20448` and `PID-1-SI-LR20449`)—and flags **`has_discrepancy_warning: true`** because those two upstream blueprints disagree!*
+   > 2. ***Curated middle layer:** It links to the exact human-verified Markdown specification in Cloud Storage (`gcs_markdown_uri`).*
+   > 3. ***Downstream target:** It gives us the exact primary key (`EQ:RH-E-9A`) where this asset lands inside Cloud Spanner."*
 
-### Step 2B: Combine Plain English + a One-Line Filter (`~1.5 mins`)
-1. **[Click Back]** to the Knowledge Catalog search bar, paste this, and press **Enter**:
+### Step 2B: Follow the Lineage Upstream to Source PDFs & Downstream to Spanner Lineage Tables (`~1.5 mins`)
+1. **[Trace Upstream — Click Back to Search Bar, Paste & Press Enter]:**
+   ```text
+   source P&ID packages covering Residual Heat Removal and Safety Injection
+   ```
+   - **[What You'll See]:** Surfaces **`P&ID Package: ML101620329 Part 2 (Seabrook Station LR P&IDs)`** and **`P&ID Package: ML101620329 Part 1 (Seabrook Station LR P&IDs)`** right at the top!
+   - **[Say This]:** *"If an auditor or safety engineer asks 'Show me the exact upstream blueprint packages behind `RH-E-9A`', we type that in plain English and immediately pull up cataloged `Source Document` entries for **Part 1** (`PID-1-SI-LR20448`) and **Part 2** (`PID-1-SI-LR20449`)."*
+2. **[Trace Downstream — Paste into Search Bar & Press Enter]:**
+   ```text
+   Spanner document lineage tables
+   ```
+   - **[What You'll See]:** Surfaces the system-cataloged `CLOUD_SPANNER` tables **`InstrumentDocumentLineage`**, **`UnitDocumentLineage`**, **`EquipmentDocumentLineage`**, and **`GovernanceDocs`**.
+   - **[Say This]:** *"And looking downstream, Knowledge Catalog automatically catalogs the live **Cloud Spanner lineage tables** (`EquipmentDocumentLineage`, `InstrumentDocumentLineage`, `GovernanceDocs`) side-by-side with our unstructured engineering documents."*
+3. **[Optional 15-Second Sensor Check]:** You can also find safety sensors by symptom without knowing part numbers:
    ```text
    flow switches that prevent charging pump deadheading or cavitation
    ```
-   *(Instant plain-English match: surfaces the safety flow switches `FIS-7325` and `FIS-610` even though we described the problem—"pump overheating/cavitation"—instead of typing their part codes!)*
-2. **[Optional 20-Second Bonus Filter]:** Show that you can also filter specifically for items with active safety warnings:
-   ```text
-   safety interlock AND okf-plant-asset-aspect.has_discrepancy_warning:true
-   ```
-3. **[Transition to Spanner — Say This]:**
-   > *"So Knowledge Catalog makes it effortless for anyone in the business to find trusted assets and spot flagged items like `RH-E-9A` and `FIS-610`. Now, what if an engineer or AI assistant needs to dig deeper into the manuals AND trace every pipe connected to that equipment? Let's switch to **Cloud Spanner**."*
+   *(Surfaces safety flow switches `FIS-7325` and `FIS-610` immediately!)*
+4. **[Transition to Spanner — Say This]:**
+   > *"Knowledge Catalog just gave us plain-English discovery and full document-to-database lineage around `RH-E-9A` and `FIS-610`. Now let's switch to **Cloud Spanner** to search inside the engineering text and visually map the connected pipes and lineage edges."*
 
 ---
 
@@ -193,13 +208,27 @@ Switch to **Tab 3 (Spanner Studio)**.
    > - *And branching right off them are the exact safety sensors watching over each step—including flow switch `FIS-610`!"*
 
 ### Wrap-Up Sentence (`15 Seconds`)
-> *"To sum up: normally, companies have to buy and stitch together four separate systems—a keyword search tool, an AI vector database, a graph database, and a data catalog—and keep copying data between them. With Google Cloud, **Knowledge Catalog** gives everyone plain-English search across the business, and **Cloud Spanner** handles **exact keywords, AI meaning search, and visual relationship maps** all inside one trusted database."*
+> *"To sum up: normally, companies have to stitch together four separate systems—a keyword search tool, an AI vector database, a graph database, and a lineage catalog—and lose track of where engineering numbers came from. With Google Cloud, **Knowledge Catalog** gives everyone plain-English discovery plus **end-to-end document-to-database data lineage**, and **Cloud Spanner** handles **exact keywords, AI meaning search, and visual relationship maps** all inside one trusted database."*
 
 ---
 
-## Optional Backup Query (Only If Someone Asks in Q&A!)
+## Optional Backup Queries (Only If Someone Asks in Q&A!)
 
-**"Can Spanner run Hybrid Search AND walk the Equipment Graph in a single step?"**
+### Q&A Option 1: "Can we also visualize that upstream document lineage (`EXTRACTED_FROM` / `GOVERNED_BY`) on the Spanner Graph?"
+Yes! Paste this query and click the **`Graph`** tab—it visually connects our flagged coolers (`RH-E-9A` and `RH-E-9B`) to their upstream P&ID source packages (`ML101620329 Part 1` & `Part 2`), IEC 61882 HAZOP governance standards, and connected pipes/sensors:
+```sql
+GRAPH PlantKnowledgeGraph
+MATCH path_flow = (upstream:Equipment)-[:FLOWS_TO]->(conflict_eq:Equipment {HasConflict: TRUE})
+RETURN SAFE_TO_JSON(path_flow) AS conflict_blast_radius
+UNION ALL
+MATCH path_inst = (inst:Instrument)-[:MONITORS]->(conflict_eq:Equipment {HasConflict: TRUE})
+RETURN SAFE_TO_JSON(path_inst) AS conflict_blast_radius
+UNION ALL
+MATCH path_gov = (conflict_eq:Equipment {HasConflict: TRUE})-[:EXTRACTED_FROM|GOVERNED_BY]->(doc:GovernanceDoc)
+RETURN SAFE_TO_JSON(path_gov) AS conflict_blast_radius;
+```
+
+### Q&A Option 2: "Can Spanner run Hybrid Search AND walk the Equipment Graph in a single step?"
 Yes! Paste this query—it uses Hybrid Search to find the water purifier (**`DM-8`**, prefilter `F-33`, postfilter `F-34`) and automatically pulls every connected pressure sensor and pipe in the exact same query:
 ```sql
 @{OPTIMIZER_VERSION=7}

@@ -2,33 +2,35 @@
 
 ## What Is This Demo? (In Plain English)
 
-Imagine an industrial plant or factory with **hundreds of equipment manuals, piping diagrams, and safety checklists**. Today, when someone asks a simple question—*"Which heat exchangers cool the plant during shutdown, what pumps feed them, and do any of our diagrams contradict each other?"*—answering it takes hours of hunting through folders and PDFs.
+Imagine an industrial plant or factory with **hundreds of equipment manuals, piping diagrams, and safety checklists**. Today, when someone asks a simple question—*"Which heat exchangers cool the plant during shutdown, where did that data come from, and do any of our upstream blueprints contradict each other?"*—answering it takes hours of hunting through folders, PDFs, and databases.
 
 This repository sets up a **5–7 minute live demo** directly inside the **Google Cloud Console** (no custom website or app to maintain) showing two capabilities working together:
 
-1. **Google Cloud Knowledge Catalog (Dataplex) — *"Google Search for Company Knowledge"* (~3 mins):**
-   - Anyone (even non-technical users) can type a **plain-English question** in the search bar to find equipment, safety sensors, and operating rules—and immediately see structured tags like safety level or **warning flags** where two engineering drawings disagree.
+1. **Google Cloud Knowledge Catalog (Dataplex) — *"Plain-English Discovery & End-to-End Data Lineage"* (~3 mins):**
+   - Anyone (even non-technical users) can type a **plain-English question** in the search bar to find equipment, safety sensors, upstream engineering blueprints, and live database lineage tables in one place.
+   - Every catalog card traces **3-stage data lineage & provenance**: from **upstream raw P&ID blueprints** (`ML101620329 Part 1 & Part 2`, `PID-1-SI-LR20448`, `PID-1-SI-LR20449`) $\rightarrow$ **curated Cloud Storage Markdown specs** (`gcs_markdown_uri`) $\rightarrow$ **downstream Cloud Spanner Graph & Lineage tables** (`EQ:RH-E-9A`, `EquipmentDocumentLineage`)—immediately flagging **discrepancy warnings** when two upstream engineering drawings disagree.
 2. **Google Cloud Spanner — *"Smart Hybrid Search + Visual Equipment Map"* (~3 mins):**
    - **Hybrid Search:** Combines **exact code matching** (like `Ctrl+F` for part numbers such as `FIS-610`) with **AI meaning search** (understanding concepts like *"prevent pump overheating or low-flow damage"*) in one step so the right answer always rises to the top.
-   - **Visual Knowledge Graph:** Draws an interactive, color-coded map of how tanks, pipes, pumps, heat exchangers, and safety alarms connect to each other—so you can visually trace upstream and downstream impact in one click.
+   - **Visual Knowledge Graph:** Draws an interactive, color-coded map of how tanks, pipes, pumps, heat exchangers, safety alarms, and source governance documents connect to each other—so you can visually trace upstream and downstream impact in one click.
 
 ---
 
 ## Key Links in This Repo
 
-- **[5–7 Minute Presenter Script & Talk-Track (`docs/DEMO_SCRIPT_AND_INTRO.md`)](./docs/DEMO_SCRIPT_AND_INTRO.md)** — Step-by-step "[Click Here]" and "[Say This]" guide written in plain, non-technical language.
+- **[5–7 Minute Presenter Script & Talk-Track (`docs/DEMO_SCRIPT_AND_INTRO.md`)](./docs/DEMO_SCRIPT_AND_INTRO.md)** — Step-by-step "[Click Here]" and "[Say This]" guide focused on **Knowledge Catalog Data Lineage** + **Spanner Hybrid Search & Graph**.
 - **[Visual Architecture Diagram (`docs/ntt-kg-demo-architecture.html`)](./docs/ntt-kg-demo-architecture.html)** — Open in any web browser to show the high-level picture during your 1-minute intro.
-- **[Extra Copy-Paste Queries (`sql/demo_queries_spanner.sql`)](./sql/demo_queries_spanner.sql)** — Ready-to-run queries for Spanner Studio.
+- **[Extra Copy-Paste Queries (`sql/demo_queries_spanner.sql`)](./sql/demo_queries_spanner.sql)** — Ready-to-run queries for Spanner Studio (including visual document-lineage blast-radius queries).
 
 ---
 
 ## What Gets Loaded from `okf_bundle/`?
 
-The [`okf_bundle/`](./okf_bundle) folder contains **100 real-world plant engineering records** (from public power-plant piping diagrams and safety standards):
+The [`okf_bundle/`](./okf_bundle) folder contains **100 real-world plant engineering records** (from public power-plant piping diagrams and safety standards) with complete **document-to-database lineage**:
 - **61 Pieces of Equipment** (Pumps, Heat Exchangers, Storage Sumps, Filters, Fans)
 - **212 Safety Sensors & Gauges** (Flow switches, pressure sensors, radiation monitors, safety interlocks)
-- **885 Connections** showing how water/steam flows from one piece of equipment to the next
-- **Built-in "Spot the Problem" Examples:** Two heat exchangers (`RH-E-9A` and `RH-E-9B`) have a real **drawing conflict warning** between two engineering documents—making for a great live demo story!
+- **11 Upstream Source Blueprints & Safety Standards** (`ML101620329` P&ID packages, IEC 61882 HAZOP & Risk Assessment standards) linked via `EquipmentDocumentLineage`, `InstrumentDocumentLineage`, and `UnitDocumentLineage`
+- **885 Graph & Lineage Connections** tracing both how water/steam flows between equipment and which upstream drawings each asset was extracted from
+- **Built-in "Lineage Spotlights the Conflict" Story:** Two heat exchangers (`RH-E-9A` and `RH-E-9B`) trace back to **two conflicting upstream P&ID drawings** (`PID-1-SI-LR20448` vs. `PID-1-SI-LR20449`)—showing how data lineage catches dangerous blueprint mismatches before HAZOP review!
 
 ---
 
