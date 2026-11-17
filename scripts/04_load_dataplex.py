@@ -120,15 +120,26 @@ def ensure_catalog_schema(client: dataplex_v1.CatalogServiceClient, settings: De
         op.result(timeout=180)
 
 
-def seed_business_glossary(settings: DemoSettings) -> int:
-    gclient = dataplex_v1.BusinessGlossaryServiceClient()
+def seed_business_glossary(
+    settings: DemoSettings,
+    gclient: dataplex_v1.BusinessGlossaryServiceClient | None = None,
+) -> int:
+    if gclient is None:
+        gclient = dataplex_v1.BusinessGlossaryServiceClient(transport="rest")
     parent = f"projects/{settings.gcp_project}/locations/{settings.dataplex_glossary_location}"
     glossary_name = f"{parent}/glossaries/{settings.dataplex_glossary_id}"
 
-    try:
-        gclient.get_glossary(name=glossary_name)
+    existing_glossaries = {
+        g.name
+        for g in _with_backoff(
+            lambda: list(gclient.list_glossaries(parent=parent)),
+            settings.max_retry_attempts,
+            "list_glossaries",
+        )
+    }
+    if glossary_name in existing_glossaries:
         print(f"[GLOSSARY] Glossary exists: {glossary_name}")
-    except gcp_exceptions.NotFound:
+    else:
         print(f"[GLOSSARY] Creating Business Glossary: {glossary_name}")
         op = _with_backoff(
             lambda: gclient.create_glossary(
@@ -151,18 +162,27 @@ def seed_business_glossary(settings: DemoSettings) -> int:
         )
         op.result(timeout=180)
 
+    existing_terms = {
+        t.name
+        for t in _with_backoff(
+            lambda: list(gclient.list_glossary_terms(parent=glossary_name)),
+            settings.max_retry_attempts,
+            "list_glossary_terms",
+        )
+    }
+
     seeded = 0
     for term_spec in CANONICAL_GLOSSARY_TERMS:
         term_name = f"{glossary_name}/terms/{term_spec.term_id}"
+        if term_name in existing_terms:
+            seeded += 1
+            continue
         term_obj = dataplex_v1.GlossaryTerm(
             parent=glossary_name,
             display_name=term_spec.display_name,
             description=term_spec.description,
         )
         try:
-            gclient.get_glossary_term(name=term_name)
-            seeded += 1
-        except gcp_exceptions.NotFound:
             res = _with_backoff(
                 lambda t=term_spec, obj=term_obj: gclient.create_glossary_term(
                     parent=glossary_name,
@@ -175,8 +195,82 @@ def seed_business_glossary(settings: DemoSettings) -> int:
             if hasattr(res, "result"):
                 res.result(timeout=120)
             seeded += 1
+        except (gcp_exceptions.AlreadyExists, gcp_exceptions.Conflict):
+            seeded += 1
     print(f"[GLOSSARY] Verified {seeded} canonical engineering terms in {glossary_name}.")
     return seeded
+
+
+def upsert_catalog_entries(
+    client: dataplex_v1.CatalogServiceClient,
+    settings: DemoSettings,
+    built_entries: list[tuple[object, dataplex_v1.Entry]],
+) -> tuple[int, int]:
+    entry_group_parent = (
+        f"projects/{settings.gcp_project}/locations/{settings.dataplex_location}"
+        f"/entryGroups/{settings.dataplex_entry_group}"
+    )
+    existing_entries = {
+        e.name
+        for e in _with_backoff(
+            lambda: list(client.list_entries(parent=entry_group_parent)),
+            settings.max_retry_attempts,
+            "list_entries",
+        )
+    }
+
+    created_count = 0
+    updated_count = 0
+    for spec, entry_proto in built_entries:
+        entry_id = getattr(spec, "entry_id")
+        entry_name = f"{entry_group_parent}/entries/{entry_id}"
+        if entry_name in existing_entries:
+            entry_proto.name = entry_name
+            _with_backoff(
+                lambda ep=entry_proto: client.update_entry(
+                    request=dataplex_v1.UpdateEntryRequest(
+                        entry=ep,
+                        update_mask=field_mask_pb2.FieldMask(paths=["entry_source", "aspects"]),
+                        allow_missing=True,
+                    )
+                ),
+                settings.max_retry_attempts,
+                f"update_entry:{entry_id}",
+            )
+            updated_count += 1
+            continue
+
+        try:
+            _with_backoff(
+                lambda eid=entry_id, ep=entry_proto: client.create_entry(
+                    parent=entry_group_parent,
+                    entry_id=eid,
+                    entry=ep,
+                ),
+                settings.max_retry_attempts,
+                f"create_entry:{entry_id}",
+            )
+            created_count += 1
+        except (gcp_exceptions.AlreadyExists, gcp_exceptions.Conflict):
+            entry_proto.name = entry_name
+            _with_backoff(
+                lambda ep=entry_proto: client.update_entry(
+                    request=dataplex_v1.UpdateEntryRequest(
+                        entry=ep,
+                        update_mask=field_mask_pb2.FieldMask(paths=["entry_source", "aspects"]),
+                        allow_missing=True,
+                    )
+                ),
+                settings.max_retry_attempts,
+                f"update_entry:{entry_id}",
+            )
+            updated_count += 1
+
+    print(
+        f"[DATAPLEX] Upserted {len(built_entries)} Knowledge Catalog entries "
+        f"(created={created_count}, updated={updated_count})."
+    )
+    return created_count, updated_count
 
 
 def main() -> int:
@@ -218,48 +312,9 @@ def main() -> int:
     if args.dry_run:
         return 0
 
-    client = dataplex_v1.CatalogServiceClient()
+    client = dataplex_v1.CatalogServiceClient(transport="rest")
     ensure_catalog_schema(client, settings)
-
-    entry_group_parent = (
-        f"projects/{settings.gcp_project}/locations/{settings.dataplex_location}"
-        f"/entryGroups/{settings.dataplex_entry_group}"
-    )
-
-    created_count = 0
-    updated_count = 0
-    for spec, entry_proto in built_entries:
-        entry_name = f"{entry_group_parent}/entries/{spec.entry_id}"
-        try:
-            _with_backoff(
-                lambda eid=spec.entry_id, ep=entry_proto: client.create_entry(
-                    parent=entry_group_parent,
-                    entry_id=eid,
-                    entry=ep,
-                ),
-                settings.max_retry_attempts,
-                f"create_entry:{spec.entry_id}",
-            )
-            created_count += 1
-        except gcp_exceptions.AlreadyExists:
-            entry_proto.name = entry_name
-            _with_backoff(
-                lambda ep=entry_proto: client.update_entry(
-                    request=dataplex_v1.UpdateEntryRequest(
-                        entry=ep,
-                        update_mask=field_mask_pb2.FieldMask(paths=["entry_source", "aspects"]),
-                        allow_missing=True,
-                    )
-                ),
-                settings.max_retry_attempts,
-                f"update_entry:{spec.entry_id}",
-            )
-            updated_count += 1
-
-    print(
-        f"[DATAPLEX] Upserted {len(built_entries)} Knowledge Catalog entries "
-        f"(created={created_count}, updated={updated_count})."
-    )
+    upsert_catalog_entries(client, settings, built_entries)
 
     if not args.skip_glossary:
         try:

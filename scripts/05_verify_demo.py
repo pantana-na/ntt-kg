@@ -94,7 +94,7 @@ def main() -> int:
         conflict_graph_hits = [(r[0], r[1]) for r in snap.execute_sql(gql_sql)]
 
     # 4. Live Dataplex Knowledge Catalog Natural Language Search Check
-    dp_client = dataplex_v1.CatalogServiceClient()
+    dp_client = dataplex_v1.CatalogServiceClient(transport="rest")
     search_req = dataplex_v1.SearchEntriesRequest(
         name=f"projects/{settings.gcp_project}/locations/global",
         scope=f"projects/{settings.gcp_project}",

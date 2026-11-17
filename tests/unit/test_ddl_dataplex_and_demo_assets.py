@@ -105,3 +105,104 @@ def test_demo_queries_and_playbook_reference_real_entities() -> None:
     assert "ML.PREDICT" in demo_sql
     assert "PlantKnowledgeGraph" in demo_sql
     assert "OkfChunks" in demo_sql
+
+
+def test_seed_business_glossary_uses_list_without_404_probes() -> None:
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "load_dataplex_mod", REPO_ROOT / "scripts" / "04_load_dataplex.py"
+    )
+    assert spec is not None and spec.loader is not None
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+
+    settings = load_settings(env_file=REPO_ROOT / ".env.example", override_env="nonprod", extra_environ={})
+    glossary_name = (
+        f"projects/{settings.gcp_project}/locations/{settings.dataplex_glossary_location}"
+        f"/glossaries/{settings.dataplex_glossary_id}"
+    )
+    first_term_id = CANONICAL_GLOSSARY_TERMS[0].term_id
+
+    class _FakeNamed:
+        def __init__(self, name: str) -> None:
+            self.name = name
+
+    class _FakeGlossaryClient:
+        def __init__(self) -> None:
+            self.created_terms: list[str] = []
+            self.get_term_called = False
+
+        def list_glossaries(self, parent: str) -> list[_FakeNamed]:
+            return [_FakeNamed(glossary_name)]
+
+        def list_glossary_terms(self, parent: str) -> list[_FakeNamed]:
+            return [_FakeNamed(f"{glossary_name}/terms/{first_term_id}")]
+
+        def get_glossary_term(self, name: str) -> None:
+            self.get_term_called = True
+            raise AssertionError("get_glossary_term should not be called")
+
+        def create_glossary_term(self, parent: str, term_id: str, term: object) -> object:
+            self.created_terms.append(term_id)
+            return object()
+
+    fake_client = _FakeGlossaryClient()
+    seeded = mod.seed_business_glossary(settings, gclient=fake_client)
+    assert seeded == len(CANONICAL_GLOSSARY_TERMS)
+    assert not fake_client.get_term_called
+    assert first_term_id not in fake_client.created_terms
+    assert len(fake_client.created_terms) == len(CANONICAL_GLOSSARY_TERMS) - 1
+
+
+def test_upsert_catalog_entries_prelists_and_handles_rest_conflict() -> None:
+    from google.api_core import exceptions as gcp_exceptions
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "load_dataplex_mod", REPO_ROOT / "scripts" / "04_load_dataplex.py"
+    )
+    assert spec is not None and spec.loader is not None
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+
+    settings = load_settings(env_file=REPO_ROOT / ".env.example", override_env="nonprod", extra_environ={})
+    bundle = parse_okf_bundle(REPO_ROOT / "okf_bundle", gcs_bucket=settings.gcs_bucket, gcs_prefix=settings.gcs_prefix)
+    sample = [(s, build_dataplex_entry(s, settings)) for s in bundle.catalog_entries[:3]]
+
+    entry_group_parent = (
+        f"projects/{settings.gcp_project}/locations/{settings.dataplex_location}"
+        f"/entryGroups/{settings.dataplex_entry_group}"
+    )
+
+    class _FakeNamed:
+        def __init__(self, name: str) -> None:
+            self.name = name
+
+    class _FakeCatalogClient:
+        def __init__(self) -> None:
+            self.created: list[str] = []
+            self.updated: list[str] = []
+
+        def list_entries(self, parent: str) -> list[_FakeNamed]:
+            # First entry already in list
+            return [_FakeNamed(f"{entry_group_parent}/entries/{sample[0][0].entry_id}")]
+
+        def create_entry(self, parent: str, entry_id: str, entry: object) -> object:
+            # Second entry simulates REST HTTP 409 Conflict race
+            if entry_id == sample[1][0].entry_id:
+                raise gcp_exceptions.Conflict("Entry already exists")
+            self.created.append(entry_id)
+            return object()
+
+        def update_entry(self, request: object) -> object:
+            self.updated.append(request.entry.name)  # type: ignore[attr-defined]
+            return object()
+
+    fake_cat = _FakeCatalogClient()
+    created, updated = mod.upsert_catalog_entries(fake_cat, settings, sample)
+    assert created == 1
+    assert updated == 2
+    assert fake_cat.created == [sample[2][0].entry_id]
+
+
